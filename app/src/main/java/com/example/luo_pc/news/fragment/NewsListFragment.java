@@ -1,0 +1,268 @@
+package com.example.luo_pc.news.fragment;
+
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
+
+
+import com.example.luo_pc.news.R;
+import com.example.luo_pc.news.activity.NewsActivity;
+import com.example.luo_pc.news.adapter.NewsListAdapter;
+import com.example.luo_pc.news.bean.NewsBean;
+import com.example.luo_pc.news.utils.HttpUtils;
+import com.example.luo_pc.news.utils.JsonUtils;
+import com.example.luo_pc.news.utils.Urls;
+
+import java.util.ArrayList;
+
+
+/**
+ * Created by luo-pc on 2016/5/14.
+ */
+public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+    private String keyword;
+    private String TAG = "NewsListFragment";
+
+    private ArrayList<NewsBean> newsList = null;
+    private RecyclerView recycle_news;
+    private NewsListAdapter newsListAdapter;
+    private Context context;
+    //private ArrayList<NewsBean> newsList = null;
+    private LinearLayoutManager layoutManager;
+
+    //页数
+    int pageIndex = 0;
+    private SwipeRefreshLayout sr_refresh;
+
+    public NewsListFragment(String keyword) {
+        this.keyword = keyword;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_news_list, null);
+        context = getContext();
+        layoutManager = new LinearLayoutManager(context);
+        newsListAdapter = new NewsListAdapter(context);
+        initView(view);
+
+
+        new DownloadTask().execute(getUrl());
+        newsListAdapter.setOnItemClickListener(onItemClickListener);
+        recycle_news.setLayoutManager(layoutManager);
+        recycle_news.setAdapter(newsListAdapter);
+
+        sr_refresh.setColorSchemeResources(R.color.primary, R.color.primary_dark,
+                R.color.primary_light, R.color.accent);
+        sr_refresh.setOnRefreshListener(this);
+
+        recycle_news.addOnScrollListener(onScrollListener);
+        return view;
+    }
+
+    private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
+        private int lastVisibleItem;
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+            lastVisibleItem = layoutManager.findLastVisibleItemPosition();
+        }
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            //SCROLL_STATE_IDLE
+            //The RecyclerView is not currently scrolling.
+            if (newState == RecyclerView.SCROLL_STATE_IDLE
+                    && lastVisibleItem + 1 == newsListAdapter.getItemCount()
+                    && newsListAdapter.isShowFooter()) {
+                //加载更多新闻
+                pageIndex += Urls.PAZE_SIZE;
+                new UpdateTask().execute(getUrl());
+            }
+
+        }
+    };
+
+
+    //拼接url
+    private String getUrl() {
+        StringBuffer sb = new StringBuffer();
+        switch (keyword) {
+            //头条
+            case Urls.TOP_ID:
+                sb.append(Urls.TOP_URL).append(Urls.TOP_ID);
+                break;
+            //NBA
+            case Urls.NBA_ID:
+                sb.append(Urls.COMMON_URL).append(Urls.NBA_ID);
+                break;
+            //汽车
+            case Urls.CAR_ID:
+                sb.append(Urls.COMMON_URL).append(Urls.CAR_ID);
+                break;
+            //笑话
+            case Urls.JOKE_ID:
+                sb.append(Urls.COMMON_URL).append(Urls.JOKE_ID);
+                break;
+            default:
+                sb.append(Urls.TOP_URL).append(Urls.TOP_ID);
+                break;
+        }
+
+        sb.append("/").append(pageIndex).append(Urls.END_URL);
+        return sb.toString();
+    }
+
+
+    private NewsListAdapter.OnItemClickListener onItemClickListener = new NewsListAdapter.OnItemClickListener() {
+        @Override
+        public void onItemClick(View view, int position) {
+            Intent intent = new Intent();
+            intent.setClass(getActivity(), NewsActivity.class);
+            intent.putExtra("url", newsList.get(position).getUrl());
+
+            startActivity(intent);
+        }
+    };
+
+
+    private void initView(View view) {
+        recycle_news = (RecyclerView) view.findViewById(R.id.recycle_news);
+        sr_refresh = (SwipeRefreshLayout) view.findViewById(R.id.sr_refresh);
+    }
+
+
+    @Override
+    public void onRefresh() {
+        //刷新置pageIndex为0获取最新数据
+        pageIndex = 0;
+
+        if (newsList != null) {
+            newsList.clear();
+        }
+
+        new DownloadTask().execute(getUrl());
+//        newsListAdapter.notifyDataSetChanged();
+
+    }
+
+    /**
+     * 请求新闻信息
+     */
+    class DownloadTask extends AsyncTask<String, Integer, ArrayList<NewsBean>> {
+
+        @Override
+        protected ArrayList<NewsBean> doInBackground(String... params) {
+            try {
+                String infoUrl = params[0];
+                HttpUtils.getJsonString(infoUrl, new HttpUtils.HttpCallbackListener() {
+                    @Override
+                    public void onFinish(String response) {
+                        newsList = JsonUtils.readJsonNewsBean(response, keyword);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                return newsList;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<NewsBean> newsList) {
+            if (newsList == null) {
+                Toast.makeText(getContext(), "请求数据失败", Toast.LENGTH_SHORT);
+//                new DownloadTask().execute(getUrl());
+                return;
+            } else {
+                NewsListFragment.this.newsList = newsList;
+                newsListAdapter.setData(newsList);
+//                recycle_news.setLayoutManager(layoutManager);
+//                recycle_news.setAdapter(newsListAdapter);
+                newsListAdapter.notifyDataSetChanged();
+
+            }
+            sr_refresh.setRefreshing(false);
+
+        }
+    }
+
+    /**
+     * 加载更多
+     */
+    class UpdateTask extends AsyncTask<String, Integer, ArrayList<NewsBean>> {
+
+        private ArrayList<NewsBean> updateNewsList;
+
+        @Override
+        protected ArrayList<NewsBean> doInBackground(String... params) {
+            try {
+                String infoUrl = params[0];
+                HttpUtils.getJsonString(infoUrl, new HttpUtils.HttpCallbackListener() {
+                    @Override
+                    public void onFinish(String response) {
+                        updateNewsList = JsonUtils.readJsonNewsBean(response, keyword);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                if(updateNewsList.size() <= 0){
+                    newsListAdapter.isShowFooter(false);
+                }
+
+
+                for (NewsBean i : updateNewsList) {
+                    newsList.add(i);
+                }
+
+                return updateNewsList;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<NewsBean> updateNewsList) {
+            if (updateNewsList == null) {
+                Toast.makeText(getContext(), "请求数据失败", Toast.LENGTH_SHORT);
+                return;
+            } else {
+//                newsListAdapter.isShowFooter(false);
+                newsListAdapter.setData(NewsListFragment.this.newsList);
+                newsListAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+}
+
+
+

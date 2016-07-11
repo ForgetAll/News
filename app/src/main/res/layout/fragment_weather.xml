@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_weather"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_city"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:textColor="#ffffff"
+            android:textSize="50sp" />
+
+        <ImageButton
+            android:layout_marginTop="15dp"
+            android:id="@+id/ib_location"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="end"
+            android:background="@null"
+            android:scaleType="centerCrop"
+            android:src="@drawable/weather_location" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tv_temp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingTop="10dp"
+        android:textColor="#ffffff"
+        android:textSize="70sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_wd"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="南风"
+                android:textColor="#ffffff"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_wp"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:textColor="#ffffff"
+                android:textSize="25sp" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            android:background="#ffffff" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_hum"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="相对湿度"
+                android:textColor="#ffffff"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_humdata"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:textColor="#ffffff"
+                android:textSize="25sp" />
+
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            android:background="#ffffff" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_air"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:text="空气质量"
+                android:textColor="#ffffff"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_airlevel"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:textColor="#ffffff"
+                android:textSize="25sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <ListView
+        android:paddingTop="50dp"
+        android:divider="@null"
+        android:id="@+id/lv_weather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="20dp"></ListView>
+
+</LinearLayout>
