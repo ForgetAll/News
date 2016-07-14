@@ -22,7 +22,7 @@ import com.example.luo_pc.news.application.ManageApplication;
 import com.example.luo_pc.news.bean.County;
 import com.example.luo_pc.news.cache.DiskLruCache;
 import com.example.luo_pc.news.dao.DBUtils;
-import com.example.luo_pc.news.utils.MyDatabaseOpenHelper;
+import com.example.luo_pc.news.dao.MyDatabaseOpenHelper;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -5,13 +5,13 @@ import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 
 /**
  * Created by luo-pc on 2016/7/9.
  */
 public class WrapViewPager extends ViewPager {
     private static final String TAG = "WrapViewPager";
-
     public WrapViewPager(Context context) {
         super(context);
     }

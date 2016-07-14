@@ -33,18 +33,26 @@
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="iMwWI6VkM7lmsioVNTimxaqSEVbM0am8"/>
+            android:value="iMwWI6VkM7lmsioVNTimxaqSEVbM0am8" />
 
-        <service android:name="com.baidu.location.f" android:enabled="true" android:process=":remote">
-        </service>ex
+        <!--<service android:name="com.baidu.location.f" android:enabled="true" android:process=":remote">-->
+        <!--</service>-->
 
-        <activity android:name=".activity.MainActivity">
+        <activity android:name=".activity.MainActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".activity.NewsActivity" />
+        <activity android:name=".activity.CityManage" />
+        <activity android:name=".activity.CountyManage" />
+        <activity android:name=".activity.ProvinceManage" />
+
+        <service android:name="com.example.luo_pc.news.service.CheckForNetWork"/>
+
     </application>
 
 </manifest>

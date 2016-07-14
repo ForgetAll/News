@@ -50,9 +50,7 @@ public class WeatherFragment extends Fragment {
         intent = null;
     }
 
-    public WeatherFragment(Intent intent) {
-        this.intent = intent;
-    }
+
 
 
     @Override
@@ -69,25 +67,27 @@ public class WeatherFragment extends Fragment {
         initView(view);
         initEvent();
         weatherAdapter = new WeatherAdapter(getContext());
-
+        getArguments();
         try {
-            if (intent == null) {
-                if (sp.getString("weather code", "abc") != "abc") {
-                    new WeatherRequest().execute(Urls.WEATHER + sp.getString("weather code", "abc"));
-                }else {
-                    new WeatherRequest().execute(Urls.WEATHER + "101190404");
-                }
+            if (sp.getString("weather code", "abc") != "abc") {
+                //加载上一次选择地点的天气
+                new WeatherRequest().execute(Urls.WEATHER + sp.getString("weather code", "abc"));
             } else {
-                String weathercode = intent.getStringExtra("weather code");
-                if (weathercode != null) {
-                    new WeatherRequest().execute(Urls.WEATHER + intent.getStringExtra("weather code"));
-                } else {
-                    new WeatherRequest().execute(Urls.WEATHER + "101190404");
-                }
+                //默认获取昆山的天气
+                new WeatherRequest().execute(Urls.WEATHER + "101190404");
             }
+//            } else {
+//                String weathercode = intent.getStringExtra("weather code");
+//                if (weathercode != null) {
+//                    new WeatherRequest().execute(Urls.WEATHER + intent.getStringExtra("weather code"));
+//                } else {
+//                    new WeatherRequest().execute(Urls.WEATHER + "101190404");
+//                }
+//            }
 
         } catch (Exception e) {
         }
+        Log.i(TAG, "onCreateView");
         return view;
     }
 
@@ -122,6 +122,7 @@ public class WeatherFragment extends Fragment {
         });
     }
 
+
     class WeatherRequest extends AsyncTask<String, Integer, WeatherBean> {
 
         private WeatherBean wb;
@@ -144,7 +145,7 @@ public class WeatherFragment extends Fragment {
 
         @Override
         protected void onPostExecute(WeatherBean weatherBean) {
-            if (weatherBean.equals(null)) {
+            if (weatherBean == null) {
                 Toast.makeText(getContext(), "获取数据失败！", Toast.LENGTH_LONG).show();
             } else {
                 tv_city.setText(weatherBean.getName());
@@ -174,5 +175,9 @@ public class WeatherFragment extends Fragment {
                 lv_weather.setAdapter(weatherAdapter);
             }
         }
+    }
+
+    public void onRefresh(String weathercode) {
+        new WeatherRequest().execute(Urls.WEATHER + weathercode);
     }
 }

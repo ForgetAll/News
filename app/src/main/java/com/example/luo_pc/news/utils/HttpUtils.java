@@ -20,9 +20,11 @@ public class HttpUtils {
             URL dataurl = new URL(url);
             connection = (HttpURLConnection) dataurl.openConnection();
             connection.setRequestMethod("GET");
-            connection.setConnectTimeout(20000);
-            connection.setReadTimeout(20000);
+            connection.setConnectTimeout(8000);
+            connection.setReadTimeout(8000);
+
             InputStream in = connection.getInputStream();
+
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             String line;
             while ((line = reader.readLine()) != null) {

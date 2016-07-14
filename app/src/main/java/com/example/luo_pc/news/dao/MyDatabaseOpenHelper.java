@@ -1,4 +1,4 @@
-package com.example.luo_pc.news.utils;
+package com.example.luo_pc.news.dao;
 
 import android.content.Context;
 import android.database.DatabaseErrorHandler;

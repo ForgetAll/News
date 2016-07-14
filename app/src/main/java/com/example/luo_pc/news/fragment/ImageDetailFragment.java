@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,7 +53,6 @@ public class ImageDetailFragment extends DialogFragment implements View.OnLongCl
 
         return view;
     }
-
     public void setData(String imageUrl, String desc) {
         this.imageUrl = imageUrl;
         this.desc = desc;

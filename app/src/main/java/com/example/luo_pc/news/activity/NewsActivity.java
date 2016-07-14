@@ -2,9 +2,14 @@ package com.example.luo_pc.news.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
 import android.view.Window;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.example.luo_pc.news.R;
 
@@ -27,7 +32,46 @@ public class NewsActivity extends Activity {
         Intent intent = getIntent();
         String url = intent.getStringExtra("url");
         wv_news.loadUrl(url);
+        wv_news.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
+
+        WebSettings settings = wv_news.getSettings();
+//        //支持双击缩放
+//        settings.setUseWideViewPort(true);
+        //支持javascript
+        settings.setJavaScriptEnabled(true);
+        //支持缩放
+        settings.setBuiltInZoomControls(true);
 
 
+        wv_news.setWebViewClient(new WebViewClient(){
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                //开始加载网页
+                super.onPageStarted(view, url, favicon);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                view.loadUrl(url);
+                return true;
+            }
+        });
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if((keyCode == KeyEvent.KEYCODE_BACK) && wv_news.canGoBack()){
+            wv_news.goBack();
+            return true;
+        }
+        this.finish();
+        return true;
+    }
+
 }

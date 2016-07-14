@@ -21,12 +21,6 @@ import java.util.ArrayList;
  * Created by luo-pc on 2016/5/15.
  */
 public class ParentFragment extends Fragment {
-
-    public static final int NEWS_TYPE_TOP = 0;
-    public static final int NEWS_TYPE_SPORT = 1;
-    public static final int NEWS_TYPE_GAME = 2;
-    public static final int NEWS_TYPE_JOKES = 3;
-
     private ViewPager vp_content;
     private TabLayout tab_title;
     private ArrayList<String> titleList;
@@ -55,10 +49,17 @@ public class ParentFragment extends Fragment {
         titleList.add("汽车");
         titleList.add("笑话");
 
-        NewsListFragment hotNewsList = new NewsListFragment(Urls.TOP_ID);
-        NewsListFragment sportNewsList = new NewsListFragment(Urls.NBA_ID);
-        NewsListFragment carNewsList = new NewsListFragment(Urls.CAR_ID);
-        NewsListFragment jokeNewsList = new NewsListFragment(Urls.JOKE_ID);
+        NewsListFragment hotNewsList = new NewsListFragment();
+        hotNewsList.setKeyword(Urls.TOP_ID);
+
+        NewsListFragment sportNewsList = new NewsListFragment();
+        sportNewsList.setKeyword(Urls.NBA_ID);
+
+        NewsListFragment carNewsList = new NewsListFragment();
+        carNewsList.setKeyword(Urls.CAR_ID);
+
+        NewsListFragment jokeNewsList = new NewsListFragment();
+        jokeNewsList.setKeyword(Urls.JOKE_ID);
 
         fragmentList.add(hotNewsList);
         fragmentList.add(sportNewsList);

@@ -1,17 +1,28 @@
 package com.example.luo_pc.news.fragment;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Rect;
 import android.media.Image;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.transition.Transition;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -41,16 +52,95 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
     private MemoryCache memoryCache;
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
 
+    private ConnectivityManager connectivityManager;
+    private NetworkInfo info;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+            info = connectivityManager.getActiveNetworkInfo();
+            if (info != null && info.isAvailable()) {
+                String name = info.getTypeName();
+                if (name.equals("WIFI")) {
+                    //初始的时候页数为1
+                    new DownloadTask().execute(Urls.IMAGE_URL + pageIndex);
+                } else {
+                    //没有wifi时提示
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("提示");
+                    builder.setMessage("当前网络需要耗费您的流量加载图片，是否看图？");
+                    builder.setPositiveButton("加载", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //初始的时候页数为1
+                            new DownloadTask().execute(Urls.IMAGE_URL + pageIndex);
+                        }
+                    });
+
+                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+//                            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fl_content, new ParentFragment()).commit();
+                            FragmentTransaction transition = getActivity().getSupportFragmentManager().beginTransaction();
+                            Fragment fragment = getActivity().getSupportFragmentManager().findFragmentByTag("newsListFragment");
+                            if (fragment != null) {
+                                transition.show(fragment);
+                            } else {
+                                ParentFragment newsListFragment = new ParentFragment();
+                                transition.add(R.id.fl_content, newsListFragment, "newsListFragment");
+                            }
+
+                            Fragment weatherFragment = getActivity().getSupportFragmentManager().findFragmentByTag("weatherFragment");
+                            Fragment imageFragment = getActivity().getSupportFragmentManager().findFragmentByTag("imageFragment");
+                            Fragment meFragment = getActivity().getSupportFragmentManager().findFragmentByTag("meFragment");
+//                            Fragment settingFragment = getActivity().getSupportFragmentManager().findFragmentByTag("weatherFragment");
+
+                            if (weatherFragment != null) {
+                                transition.hide(weatherFragment);
+                            }
+                            if (imageFragment != null) {
+                                transition.hide(imageFragment);
+                            }
+                            if (meFragment != null) {
+                                transition.hide(meFragment);
+                            }
+                            transition.commit();
+                        }
+                    });
+
+                    builder.show();
+                }
+            } else {
+                Toast.makeText(getActivity(), "当前无网络！", Toast.LENGTH_SHORT).show();
+            }
+
+
+        }
+    };
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        getActivity().registerReceiver(receiver, filter);
+    }
+
+    @Override
+    public void onDestroy() {
+        getActivity().unregisterReceiver(receiver);
+        super.onDestroy();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_image_list, null);
-
         rv_image = (RecyclerView) view.findViewById(R.id.rv_image);
 
-
         initData();
-        staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
+        staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         staggeredGridLayoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
         rv_image.setLayoutManager(staggeredGridLayoutManager);
         rv_image.setAdapter(imageListAdapter);
@@ -81,38 +171,29 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
     @Override
     public void onItemClick(View view, int position) {
         ImageDetailFragment imageDetailFragment = new ImageDetailFragment();
-        imageDetailFragment.setData(imageList.get(position).getUrl(),imageList.get(position).getDesc());
-        imageDetailFragment.show(getFragmentManager(),"ImageDetailFragment");
-//        fragment_test ft = new fragment_test();
-//        ft.setData(imageList,getActivity(),position);
-//        ft.show(getFragmentManager(),"ft");
-//        Intent intent = new Intent();
-//        intent.setClass(getActivity(), ImageDialogActivity.class);
-//        ImageDialogActivity.imageList = imageList;
-//        ImageDialogActivity.position = position;
-//        startActivity(intent);
+        imageDetailFragment.setData(imageList.get(position).getUrl(), imageList.get(position).getDesc());
+        imageDetailFragment.show(getFragmentManager(), "ImageDetailFragment");
 
     }
 
 
     private void initData() {
         imageListAdapter = new ImageListAdapter(getContext());
-        //初始的时候页数为1
-        new DownloadTask().execute(Urls.IMAGE_URL + pageIndex);
-
     }
 
     private void initCache() {
         memoryCache = MemoryCache.getInstance();
     }
 
-
+    /**
+     * 加载更多
+     */
     class UpdateTask extends AsyncTask<String, Integer, ArrayList<ImageBean>> {
 
         private ArrayList<ImageBean> updateNewsList;
 
         @Override
-        protected ArrayList<ImageBean> doInBackground(String... params) {
+        protected ArrayList<ImageBean> doInBackground(final String... params) {
             try {
                 String infoUrl = params[0];
                 HttpUtils.getJsonString(infoUrl, new HttpUtils.HttpCallbackListener() {
@@ -123,6 +204,22 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
 
                     @Override
                     public void onError(Exception e) {
+//                        //加载数据失败的回调
+//                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//                        builder.setTitle("当前数据加载失败，是否重新加载？");
+//                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int which) {
+//                                new UpdateTask().execute(params[0]);
+//                            }
+//                        });
+//                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int which) {
+//
+//                            }
+//                        });
+//                        builder.show();
                         e.printStackTrace();
                     }
                 });
@@ -146,7 +243,7 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
         @Override
         protected void onPostExecute(ArrayList<ImageBean> updateNewsList) {
             if (updateNewsList == null) {
-                Toast.makeText(getContext(), "请求数据失败", Toast.LENGTH_SHORT);
+                Toast.makeText(getActivity(), "请求数据失败", Toast.LENGTH_SHORT);
                 return;
             } else {
 //                imageListAdapter.setisShow(false);
@@ -156,9 +253,12 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
         }
     }
 
+    /**
+     * 加载
+     */
     class DownloadTask extends AsyncTask<String, Integer, ArrayList<ImageBean>> {
         @Override
-        protected ArrayList<ImageBean> doInBackground(String... params) {
+        protected ArrayList<ImageBean> doInBackground(final String... params) {
             try {
                 String imageUrl = params[0];
                 HttpUtils.getJsonString(imageUrl, new HttpUtils.HttpCallbackListener() {
@@ -173,6 +273,22 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
                     @Override
                     public void onError(Exception e) {
                         e.printStackTrace();
+//                        //加载数据失败的回调
+//                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//                        builder.setTitle("当前数据加载失败，是否重新加载？");
+//                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int which) {
+//                                new DownloadTask().execute(params[0]);
+//                            }
+//                        });
+//                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int which) {
+//
+//                            }
+//                        });
+//                        builder.show();
                     }
                 });
                 return imageList;
@@ -227,7 +343,6 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
             //The RecyclerView is not currently scrolling.
             if (imageListAdapter.getisShow() && newState == RecyclerView.SCROLL_STATE_IDLE) {
                 //加载更多
-
                 pageIndex++;
                 new UpdateTask().execute(Urls.IMAGE_URL + pageIndex);
             }

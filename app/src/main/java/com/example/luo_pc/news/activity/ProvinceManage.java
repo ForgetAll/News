@@ -16,7 +16,7 @@ import com.example.luo_pc.news.adapter.LocationAdapter;
 import com.example.luo_pc.news.application.ManageApplication;
 import com.example.luo_pc.news.bean.Province;
 import com.example.luo_pc.news.dao.DBUtils;
-import com.example.luo_pc.news.utils.MyDatabaseOpenHelper;
+import com.example.luo_pc.news.dao.MyDatabaseOpenHelper;
 
 import java.util.ArrayList;
 
@@ -25,7 +25,6 @@ import java.util.ArrayList;
  */
 public class ProvinceManage extends AppCompatActivity {
     private static final String TAG = "ProvinceMange";
-
     private ListView lv_province;
     private ArrayList<Province> provinces;
     private LocationAdapter provinceAdapter;

@@ -3,4 +3,9 @@
     <string name="appAdress">本项目app地址：https://github.com/ForgetAll/News/tree/master</string>
     <string name="myBlog">我的简书：http://www.jianshu.com/users/e1fed0fb341b/latest_articles</string>
     <string name="myEmailAdress">联系邮箱：xiasuhuei321@163.com</string>
+    <string name="news">新闻</string>
+    <string name="weather">天气</string>
+    <string name="pictures">图片</string>
+    <string name="aboutme">关于我</string>
+    <string name="settings">设置</string>
 </resources>

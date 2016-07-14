@@ -44,8 +44,13 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
     int pageIndex = 0;
     private SwipeRefreshLayout sr_refresh;
 
-    public NewsListFragment(String keyword) {
+//    public NewsListFragment(String keyword) {
+//        this.keyword = keyword;
+//    }
+
+    public void setKeyword(String keyword){
         this.keyword = keyword;
+        new DownloadTask().execute(getUrl());
     }
 
     @Override
@@ -64,7 +69,6 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
         initView(view);
 
 
-        new DownloadTask().execute(getUrl());
         newsListAdapter.setOnItemClickListener(onItemClickListener);
         recycle_news.setLayoutManager(layoutManager);
         recycle_news.setAdapter(newsListAdapter);
@@ -195,8 +199,6 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         protected void onPostExecute(ArrayList<NewsBean> newsList) {
             if (newsList == null) {
-                Toast.makeText(getContext(), "请求数据失败", Toast.LENGTH_SHORT);
-//                new DownloadTask().execute(getUrl());
                 return;
             } else {
                 NewsListFragment.this.newsList = newsList;

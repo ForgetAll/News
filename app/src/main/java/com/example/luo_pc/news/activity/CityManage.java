@@ -15,7 +15,7 @@ import com.example.luo_pc.news.adapter.LocationAdapter;
 import com.example.luo_pc.news.application.ManageApplication;
 import com.example.luo_pc.news.bean.City;
 import com.example.luo_pc.news.dao.DBUtils;
-import com.example.luo_pc.news.utils.MyDatabaseOpenHelper;
+import com.example.luo_pc.news.dao.MyDatabaseOpenHelper;
 
 import java.util.ArrayList;
 
