@@ -61,4 +61,10 @@ public class CityManage extends AppCompatActivity {
         DBUtils dbUtils = DBUtils.getInstance(db);
         cities = dbUtils.loadCity(getIntent().getStringExtra("province code"));
     }
+
+    @Override
+    protected void onDestroy() {
+        Log.i(TAG,"onDestroy");
+        super.onDestroy();
+    }
 }

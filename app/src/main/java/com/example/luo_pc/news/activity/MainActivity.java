@@ -90,13 +90,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void jumpToWeather(){
         if (getIntent().getBooleanExtra("jump to weather", false)) {
             ArrayList<Activity> list = ((ManageApplication) getApplication()).getList();
-            /*
-            *  其实采用singletask启动的activity复用的时候会将他上面的activity出栈，但我这里
-            *  想练习一下application级别变量的使用
-            */
-            for (Activity i : list) {
-                i.finish();
-            }
+//            /*
+//            *  其实采用singletask启动的activity复用的时候会将他上面的activity出栈，但我这里
+//            *  想练习一下application级别变量的使用
+//            */
+//            for (Activity i : list) {
+//                i.finish();
+//                list.remove(i);
+//            }
             weatherFragment = new WeatherFragment();
             transaction.add(R.id.fl_content, weatherFragment);
 

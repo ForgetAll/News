@@ -69,4 +69,10 @@ public class ProvinceManage extends AppCompatActivity {
         db = mdb.getReadableDatabase();
         return db;
     }
+
+    @Override
+    protected void onDestroy() {
+        Log.i(TAG,"onDestroy");
+        super.onDestroy();
+    }
 }

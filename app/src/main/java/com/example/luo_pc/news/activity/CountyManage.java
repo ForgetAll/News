@@ -126,4 +126,9 @@ public class CountyManage extends AppCompatActivity {
         return 1;
     }
 
+    @Override
+    protected void onDestroy() {
+        Log.i(TAG,"onDestroy");
+        super.onDestroy();
+    }
 }
