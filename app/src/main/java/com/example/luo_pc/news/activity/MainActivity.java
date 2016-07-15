@@ -1,8 +1,6 @@
 package com.example.luo_pc.news.activity;
 
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.design.widget.NavigationView;
@@ -19,7 +17,6 @@ import com.example.luo_pc.news.R;
 import com.example.luo_pc.news.application.ManageApplication;
 import com.example.luo_pc.news.fragment.ImageFragment;
 import com.example.luo_pc.news.fragment.MeFragment;
-import com.example.luo_pc.news.fragment.NewsListFragment;
 import com.example.luo_pc.news.fragment.ParentFragment;
 import com.example.luo_pc.news.fragment.SettingFragment;
 import com.example.luo_pc.news.fragment.WeatherFragment;
@@ -35,10 +32,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawer;
     private NavigationView nav_layout;
     private final String TAG = "MainActivity";
-    private Context context;
     private SharedPreferences sp;
     private SharedPreferences.Editor edit;
-    private String weatherCode;
     //判断是否跳转到天气
     private boolean jump;
     //包含数据的intent
@@ -54,14 +49,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FragmentTransaction transaction;
     private Fragment fragment;
 
-    private ArrayList<Fragment> fragmentList;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().hide();
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
         setContentView(R.layout.fragment_main);
-        context = getApplicationContext();
 
         initData();
         transaction = getSupportFragmentManager().beginTransaction();
@@ -74,9 +68,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //这里的逻辑很容易搞混，写过一次数据库就不用再写了
         if (!sp.getBoolean("write once", false)) {
-            edit.putBoolean("firstOpen", true).commit();
+            edit.putBoolean("firstOpen", true).apply();
         } else {
-            edit.putBoolean("firstOpen", false).commit();
+            edit.putBoolean("firstOpen", false).apply();
         }
 
         initView();
@@ -89,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     public void jumpToWeather(){
         if (getIntent().getBooleanExtra("jump to weather", false)) {
-            ArrayList<Activity> list = ((ManageApplication) getApplication()).getList();
+//            ArrayList<Activity> list = ((ManageApplication) getApplication()).getList();
 //            /*
 //            *  其实采用singletask启动的activity复用的时候会将他上面的activity出栈，但我这里
 //            *  想练习一下application级别变量的使用
@@ -140,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void handleIntent(Intent intent) {
-        weatherCode = intent.getStringExtra("weather code");
         jump = intent.getBooleanExtra("jump to weather", false);
         myIntent = intent;
     }
@@ -158,11 +151,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         startIntent.setClass(this, CheckForNetWork.class);
         startService(startIntent);
 
-        fragmentList = new ArrayList<Fragment>();
-        fragmentList.add(newsListFragment);
-        fragmentList.add(weatherFragment);
-        fragmentList.add(imageFragment);
-        fragmentList.add(meFragment);
 //        fragmentList.add(settingFragment);
 
     }
@@ -225,13 +213,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
 
                 if (newsListFragment != null) {
-                    transaction.hide(newsListFragment);
+                    transaction.hide(getSupportFragmentManager().findFragmentByTag("newsListFragment"));
                 }
                 if (imageFragment != null) {
-                    transaction.hide(imageFragment);
+                    transaction.hide(getSupportFragmentManager().findFragmentByTag("imageFragment"));
                 }
                 if (meFragment != null) {
-                    transaction.hide(meFragment);
+                    transaction.hide(getSupportFragmentManager().findFragmentByTag("meFragment"));
                 }
                 if(settingFragment != null){
                     transaction.hide(settingFragment);
@@ -255,13 +243,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
                 if (weatherFragment != null) {
-                    transaction.hide(weatherFragment);
+                    transaction.hide(getSupportFragmentManager().findFragmentByTag("weatherFragment"));
                 }
                 if (newsListFragment != null) {
-                    transaction.hide(newsListFragment);
+                    transaction.hide(getSupportFragmentManager().findFragmentByTag("newsListFragment"));
                 }
                 if (meFragment != null) {
-                    transaction.hide(meFragment);
+                    transaction.hide(getSupportFragmentManager().findFragmentByTag("meFragment"));
                 }
                 if(settingFragment != null){
                     transaction.hide(settingFragment);
@@ -285,13 +273,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
 
                 if (weatherFragment != null) {
-                    transaction.hide(weatherFragment);
+                    transaction.hide(getSupportFragmentManager().findFragmentByTag("weatherFragment"));
                 }
                 if (newsListFragment != null) {
-                    transaction.hide(newsListFragment);
+                    transaction.hide(getSupportFragmentManager().findFragmentByTag("newsListFragment"));
                 }
                 if (imageFragment != null) {
-                    transaction.hide(imageFragment);
+                    transaction.hide(getSupportFragmentManager().findFragmentByTag("imageFragment"));
                 }
                 if(settingFragment != null){
                     transaction.hide(settingFragment);
@@ -352,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 InputStream is = MainActivity.this.getResources().openRawResource(R.raw.info);
                 FileOutputStream fos = new FileOutputStream(databaseFilename);
                 byte[] buffer = new byte[1024];
-                int count = 0;
+                int count;
                 while ((count = is.read(buffer)) > 0) {
                     fos.write(buffer, 0, count);
                 }

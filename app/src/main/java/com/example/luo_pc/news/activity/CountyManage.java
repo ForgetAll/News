@@ -37,7 +37,7 @@ public class CountyManage extends AppCompatActivity {
     private DBUtils dbUtils;
     private ArrayList<County> counties;
     private SQLiteDatabase db;
-    private DiskLruCache diskLruCache = null;
+//    private DiskLruCache diskLruCache = null;
     private DiskLruCache.Editor editor;
 
     @Override

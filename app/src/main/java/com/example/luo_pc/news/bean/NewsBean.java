@@ -1,13 +1,12 @@
 package com.example.luo_pc.news.bean;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Created by luo-pc on 2016/5/13.
  */
-public class NewsBean {
-    boolean haveUrl = false;
-
+public class NewsBean implements Serializable{
     /**
      * docid
      */
@@ -99,7 +98,6 @@ public class NewsBean {
     }
 
     public String getUrl() {
-        haveUrl = true;
         return url;
     }
 

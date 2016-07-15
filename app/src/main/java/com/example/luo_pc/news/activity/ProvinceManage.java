@@ -27,9 +27,6 @@ public class ProvinceManage extends AppCompatActivity {
     private static final String TAG = "ProvinceMange";
     private ListView lv_province;
     private ArrayList<Province> provinces;
-    private LocationAdapter provinceAdapter;
-    private SQLiteDatabase db;
-    private DBUtils dbUtils;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,7 +34,7 @@ public class ProvinceManage extends AppCompatActivity {
         setContentView(R.layout.activity_province_list);
         ((ManageApplication) getApplication()).addToList(ProvinceManage.this);
         setTitle("省");
-        provinceAdapter = new LocationAdapter(this);
+        LocationAdapter provinceAdapter = new LocationAdapter(this);
         initView();
         initData();
         provinceAdapter.setProvinces(provinces);
@@ -60,13 +57,13 @@ public class ProvinceManage extends AppCompatActivity {
     }
 
     private void initData() {
-        dbUtils = DBUtils.getInstance(getDatabase());
+        DBUtils dbUtils = DBUtils.getInstance(getDatabase());
         provinces = dbUtils.loadProvinces();
     }
 
     private SQLiteDatabase getDatabase() {
         MyDatabaseOpenHelper mdb = new MyDatabaseOpenHelper(this);
-        db = mdb.getReadableDatabase();
+        SQLiteDatabase db = mdb.getReadableDatabase();
         return db;
     }
 

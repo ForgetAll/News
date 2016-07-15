@@ -2,6 +2,7 @@ package com.example.luo_pc.news.fragment;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +21,17 @@ import com.example.luo_pc.news.R;
 import com.example.luo_pc.news.activity.NewsActivity;
 import com.example.luo_pc.news.adapter.NewsListAdapter;
 import com.example.luo_pc.news.bean.NewsBean;
+import com.example.luo_pc.news.utils.FileUtils;
 import com.example.luo_pc.news.utils.HttpUtils;
 import com.example.luo_pc.news.utils.JsonUtils;
 import com.example.luo_pc.news.utils.Urls;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 
@@ -40,17 +49,20 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
     //private ArrayList<NewsBean> newsList = null;
     private LinearLayoutManager layoutManager;
 
+    //在重新创建fragment时加载缓存数据
+    private int count = 0;
+
     //页数
     int pageIndex = 0;
     private SwipeRefreshLayout sr_refresh;
 
-//    public NewsListFragment(String keyword) {
-//        this.keyword = keyword;
-//    }
 
-    public void setKeyword(String keyword){
+    public void setKeyword(String keyword) {
         this.keyword = keyword;
-        new DownloadTask().execute(getUrl());
+
+        if (count != 0) {
+            new DownloadTask().execute(getUrl());
+        }
     }
 
     @Override
@@ -78,6 +90,23 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
         sr_refresh.setOnRefreshListener(this);
 
         recycle_news.addOnScrollListener(onScrollListener);
+
+        if (context != null) {
+            File cacheFile = FileUtils.getDisCacheDir(context, "NewsBean" + keyword);
+            if (cacheFile.exists()) {
+                try {
+                    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cacheFile));
+                    ArrayList<NewsBean> list = (ArrayList<NewsBean>) ois.readObject();
+                    newsListAdapter.setData(list);
+                    Log.i(TAG, list.size() + " ");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        new DownloadTask().execute(getUrl());
+
         return view;
     }
 
@@ -109,7 +138,7 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
 
     //拼接url
     private String getUrl() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         switch (keyword) {
             //头条
             case Urls.TOP_ID:
@@ -174,6 +203,8 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
      */
     class DownloadTask extends AsyncTask<String, Integer, ArrayList<NewsBean>> {
 
+        private ObjectOutputStream oos;
+
         @Override
         protected ArrayList<NewsBean> doInBackground(String... params) {
             try {
@@ -182,6 +213,28 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
                     @Override
                     public void onFinish(String response) {
                         newsList = JsonUtils.readJsonNewsBean(response, keyword);
+
+                        if (count == 0) {
+                            if (context != null) {
+                                File cacheFile = FileUtils.getDisCacheDir(context, "NewsBean" + keyword);
+
+                                try {
+                                    oos = new ObjectOutputStream(new FileOutputStream(cacheFile));
+                                    oos.writeObject(newsList);
+                                    count++;
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                } finally {
+                                    if (oos != null) {
+                                        try {
+                                            oos.close();
+                                        }catch (IOException e){
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     @Override
@@ -236,7 +289,7 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
                     }
                 });
 
-                if(updateNewsList.size() <= 0){
+                if (updateNewsList.size() <= 0) {
                     newsListAdapter.isShowFooter(false);
                 }
 
@@ -255,16 +308,11 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         protected void onPostExecute(ArrayList<NewsBean> updateNewsList) {
             if (updateNewsList == null) {
-                Toast.makeText(getContext(), "请求数据失败", Toast.LENGTH_SHORT);
-                return;
+                Toast.makeText(getContext(), "请求数据失败", Toast.LENGTH_SHORT).show();
             } else {
 //                newsListAdapter.isShowFooter(false);
                 newsListAdapter.setData(NewsListFragment.this.newsList);
-                newsListAdapter.notifyDataSetChanged();
             }
         }
     }
 }
-
-
-

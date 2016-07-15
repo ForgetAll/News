@@ -1,9 +1,11 @@
 package com.example.luo_pc.news.bean;
 
+import java.io.Serializable;
+
 /**
  * Created by luo-pc on 2016/6/20.
  */
-public class WeatherBean {
+public class WeatherBean implements Serializable{
     /*************************
      * forecast中的数据
      *************************/

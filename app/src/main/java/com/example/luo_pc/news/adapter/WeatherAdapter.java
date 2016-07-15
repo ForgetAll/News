@@ -27,10 +27,15 @@ public class WeatherAdapter extends BaseAdapter {
 
     public void setWeather(WeatherBean wb) {
         this.weather = wb.getWeather();
+        notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
+        if (weather == null) {
+            return 0;
+        }
+
         return weather.length;
     }
 

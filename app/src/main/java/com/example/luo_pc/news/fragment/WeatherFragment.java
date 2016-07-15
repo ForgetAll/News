@@ -20,9 +20,17 @@ import com.example.luo_pc.news.R;
 import com.example.luo_pc.news.activity.ProvinceManage;
 import com.example.luo_pc.news.adapter.WeatherAdapter;
 import com.example.luo_pc.news.bean.WeatherBean;
+import com.example.luo_pc.news.utils.FileUtils;
 import com.example.luo_pc.news.utils.HttpUtils;
 import com.example.luo_pc.news.utils.JsonUtils;
 import com.example.luo_pc.news.utils.Urls;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 
 /**
@@ -51,8 +59,6 @@ public class WeatherFragment extends Fragment {
     }
 
 
-
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,7 +73,56 @@ public class WeatherFragment extends Fragment {
         initView(view);
         initEvent();
         weatherAdapter = new WeatherAdapter(getContext());
-        getArguments();
+        lv_weather.setAdapter(weatherAdapter);
+
+        ObjectInputStream ois = null;
+
+        if(getActivity() != null){
+            File weatherCache = FileUtils.getDisCacheDir(getActivity(),"WeatherBean");
+            try{
+                ois = new ObjectInputStream(new FileInputStream(weatherCache));
+                WeatherBean wb = (WeatherBean) ois.readObject();
+
+                weatherAdapter.setWeather(wb);
+
+                tv_city.setText(wb.getName());
+                tv_temp.setText(wb.getRealTemp() + "℃");
+
+                tv_wd.setText(wb.getWindDir());
+                tv_wp.setText(wb.getWindPow());
+
+                tv_humdata.setText(wb.getHumidity());
+
+                int aqi = wb.getAqi();
+
+                if (aqi < 50) {
+                    tv_airlevel.setText("优");
+                } else if (aqi < 100) {
+                    tv_airlevel.setText("良好");
+                } else if (aqi < 150) {
+                    tv_airlevel.setText("轻度");
+                } else if (aqi < 200) {
+                    tv_airlevel.setText("中度");
+                } else if (aqi < 300) {
+                    tv_airlevel.setText("高度");
+                } else {
+                    tv_airlevel.setText("严重");
+                }
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }finally {
+                if(ois != null){
+                    try{
+                        ois.close();
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        //千万不要改，改了会爆炸
         try {
             if (sp.getString("weather code", "abc") != "abc") {
                 //加载上一次选择地点的天气
@@ -87,7 +142,7 @@ public class WeatherFragment extends Fragment {
 
         } catch (Exception e) {
         }
-        Log.i(TAG, "onCreateView");
+
         return view;
     }
 
@@ -126,6 +181,7 @@ public class WeatherFragment extends Fragment {
     class WeatherRequest extends AsyncTask<String, Integer, WeatherBean> {
 
         private WeatherBean wb;
+        private ObjectOutputStream oos;
 
         @Override
         protected WeatherBean doInBackground(String... params) {
@@ -133,6 +189,23 @@ public class WeatherFragment extends Fragment {
                 @Override
                 public void onFinish(String response) {
                     wb = JsonUtils.readJsonWeatherBean(response);
+                    if(getActivity() != null){
+                        File weatherCache = FileUtils.getDisCacheDir(getActivity(),"WeatherBean");
+                        try{
+                            oos = new ObjectOutputStream(new FileOutputStream(weatherCache));
+                            oos.writeObject(wb);
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }finally {
+                            if(oos != null){
+                                try{
+                                    oos.close();
+                                }catch (IOException e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
                 }
 
                 @Override
@@ -146,7 +219,7 @@ public class WeatherFragment extends Fragment {
         @Override
         protected void onPostExecute(WeatherBean weatherBean) {
             if (weatherBean == null) {
-                Toast.makeText(getContext(), "获取数据失败！", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "获取数据失败！从缓存加载数据！", Toast.LENGTH_LONG).show();
             } else {
                 tv_city.setText(weatherBean.getName());
                 tv_temp.setText(weatherBean.getRealTemp() + "℃");
@@ -172,7 +245,6 @@ public class WeatherFragment extends Fragment {
                     tv_airlevel.setText("严重");
                 }
                 weatherAdapter.setWeather(weatherBean);
-                lv_weather.setAdapter(weatherAdapter);
             }
         }
     }

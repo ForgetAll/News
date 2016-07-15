@@ -40,6 +40,7 @@ public class ImageListAdapter extends RecyclerView.Adapter {
 
     public void setData(ArrayList<ImageBean> imageList) {
         this.imageList = imageList;
+        notifyDataSetChanged();
 
     }
 

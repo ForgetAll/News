@@ -24,7 +24,6 @@ public class ParentFragment extends Fragment {
     private ViewPager vp_content;
     private TabLayout tab_title;
     private ArrayList<String> titleList;
-    private ArrayList<NewsBean> allnews = new ArrayList<>();
     private ArrayList<Fragment> fragmentList = new ArrayList<>();
 
 

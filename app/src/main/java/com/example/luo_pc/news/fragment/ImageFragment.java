@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Rect;
-import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -17,23 +16,27 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.transition.Transition;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.example.luo_pc.news.R;
 import com.example.luo_pc.news.adapter.ImageListAdapter;
 import com.example.luo_pc.news.bean.ImageBean;
 import com.example.luo_pc.news.cache.MemoryCache;
+import com.example.luo_pc.news.utils.FileUtils;
 import com.example.luo_pc.news.utils.HttpUtils;
 import com.example.luo_pc.news.utils.JsonUtils;
 import com.example.luo_pc.news.utils.Urls;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 /**
@@ -45,11 +48,12 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
     private RecyclerView rv_image;
     //页数
     int pageIndex = 1;
+    //第一次打开缓存
+    int count = 0;
 
     private ArrayList<ImageBean> imageList;
     private ImageListAdapter imageListAdapter;
 
-    private MemoryCache memoryCache;
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
 
     private ConnectivityManager connectivityManager;
@@ -119,6 +123,7 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
         }
     };
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -145,7 +150,6 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
         rv_image.setLayoutManager(staggeredGridLayoutManager);
         rv_image.setAdapter(imageListAdapter);
 
-
 //        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
 //              @Override
 //              public int getSpanSize(int position) {
@@ -164,6 +168,26 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
 
         imageListAdapter.setOnItemClickListener(this);
 
+        ObjectInputStream ois = null;
+        if (getActivity() != null) {
+            File imageCache = FileUtils.getDisCacheDir(getActivity(), "ImageBean");
+            try {
+                ois = new ObjectInputStream(new FileInputStream(imageCache));
+                imageList = (ArrayList<ImageBean>) ois.readObject();
+                imageListAdapter.setData(imageList);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (ois != null) {
+                    try {
+                        ois.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        new DownloadTask().execute(Urls.IMAGE_URL + pageIndex);
 
         return view;
     }
@@ -181,9 +205,6 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
         imageListAdapter = new ImageListAdapter(getContext());
     }
 
-    private void initCache() {
-        memoryCache = MemoryCache.getInstance();
-    }
 
     /**
      * 加载更多
@@ -204,22 +225,6 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
 
                     @Override
                     public void onError(Exception e) {
-//                        //加载数据失败的回调
-//                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//                        builder.setTitle("当前数据加载失败，是否重新加载？");
-//                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                new UpdateTask().execute(params[0]);
-//                            }
-//                        });
-//                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//
-//                            }
-//                        });
-//                        builder.show();
                         e.printStackTrace();
                     }
                 });
@@ -243,8 +248,9 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
         @Override
         protected void onPostExecute(ArrayList<ImageBean> updateNewsList) {
             if (updateNewsList == null) {
-                Toast.makeText(getActivity(), "请求数据失败", Toast.LENGTH_SHORT);
-                return;
+                if (getActivity() != null) {
+                    Toast.makeText(getActivity(), "请求数据失败", Toast.LENGTH_SHORT).show();
+                }
             } else {
 //                imageListAdapter.setisShow(false);
                 imageListAdapter.setData(ImageFragment.this.imageList);
@@ -257,6 +263,9 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
      * 加载
      */
     class DownloadTask extends AsyncTask<String, Integer, ArrayList<ImageBean>> {
+
+        private ObjectOutputStream oos;
+
         @Override
         protected ArrayList<ImageBean> doInBackground(final String... params) {
             try {
@@ -267,28 +276,34 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
                         if (JsonUtils.readJsonImageBean(response) != null) {
                             imageList = JsonUtils.readJsonImageBean(response);
 //                            memoryCache.addArrayListToMemory("imageList", imageList);
+
+                            if (count == 0) {
+                                //序列化imageList
+                                if (getActivity() != null) {
+                                    File imageCache = FileUtils.getDisCacheDir(getActivity(), "ImageBean");
+                                    try {
+                                        oos = new ObjectOutputStream(new FileOutputStream(imageCache));
+                                        oos.writeObject(imageList);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    } finally {
+                                        if (oos != null) {
+                                            try {
+                                                oos.close();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+                                }
+                                count++;
+                            }
                         }
                     }
 
                     @Override
                     public void onError(Exception e) {
                         e.printStackTrace();
-//                        //加载数据失败的回调
-//                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//                        builder.setTitle("当前数据加载失败，是否重新加载？");
-//                        builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                new DownloadTask().execute(params[0]);
-//                            }
-//                        });
-//                        builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//
-//                            }
-//                        });
-//                        builder.show();
                     }
                 });
                 return imageList;
@@ -301,12 +316,13 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
         @Override
         protected void onPostExecute(ArrayList<ImageBean> imageBeen) {
             if (imageBeen == null) {
-                Toast.makeText(getContext(), "获取数据失败", Toast.LENGTH_SHORT);
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "获取数据失败", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 ImageFragment.this.imageList = imageBeen;
                 imageListAdapter.setData(imageBeen);
                 imageListAdapter.setisShow(true);
-                imageListAdapter.notifyDataSetChanged();
             }
         }
     }
@@ -347,11 +363,6 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
                 new UpdateTask().execute(Urls.IMAGE_URL + pageIndex);
             }
             staggeredGridLayoutManager.invalidateSpanAssignments();
-
         }
     };
-
 }
-
-
-

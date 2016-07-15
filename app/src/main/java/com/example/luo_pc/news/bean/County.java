@@ -1,13 +1,30 @@
 package com.example.luo_pc.news.bean;
 
+import java.io.Serializable;
+
 /**
  * Created by luo-pc on 2016/6/13.
  */
-public class County {
+public class County implements Serializable{
+    /**
+     * 县、区id
+     */
     private int id;
+    /**
+     * 县名
+     */
     private String countyName;
+    /**
+     * 县code
+     */
     private String countyCode;
+    /**
+     * 市id
+     */
     private String cityId;
+    /**
+     * 请求天气数据code
+     */
     private String weathercode;
 
     public void setId(int id) {
