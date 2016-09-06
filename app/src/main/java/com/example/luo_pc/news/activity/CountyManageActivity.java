@@ -30,7 +30,7 @@ import java.util.ArrayList;
 /**
  * Created by luo-pc on 2016/6/23.
  */
-public class CountyManage extends AppCompatActivity {
+public class CountyManageActivity extends AppCompatActivity {
     private final String TAG = "CountyManage";
 
     private ListView lv_county;
@@ -45,7 +45,7 @@ public class CountyManage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_province_list);
         setTitle(getIntent().getStringExtra("city name"));
-        ((ManageApplication) getApplication()).addToList(CountyManage.this);
+        ((ManageApplication) getApplication()).addToList(CountyManageActivity.this);
         LocationAdapter countyAdapter = new LocationAdapter(this);
         initView();
         initData();
@@ -76,7 +76,7 @@ public class CountyManage extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent();
-                intent.setClass(CountyManage.this, MainActivity.class);
+                intent.setClass(CountyManageActivity.this, MainActivity.class);
                 intent.putExtra("weather code", counties.get(position).getWeathercode());
                 intent.putExtra("jump to weather", true);
                 SharedPreferences sp = getSharedPreferences("config",MODE_PRIVATE);

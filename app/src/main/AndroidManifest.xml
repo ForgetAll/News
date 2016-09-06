@@ -47,9 +47,9 @@
         </activity>
 
         <activity android:name=".activity.NewsActivity" />
-        <activity android:name=".activity.CityManage" />
-        <activity android:name=".activity.CountyManage" />
-        <activity android:name=".activity.ProvinceManage" />
+        <activity android:name=".activity.CityManageActivity" />
+        <activity android:name=".activity.CountyManageActivity" />
+        <activity android:name=".activity.ProvinceManageActivity" />
 
         <service android:name="com.example.luo_pc.news.service.CheckForNetWork"/>
 

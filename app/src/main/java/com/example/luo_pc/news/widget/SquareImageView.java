@@ -1,4 +1,4 @@
-package com.example.luo_pc.news.view;
+package com.example.luo_pc.news.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;

@@ -14,7 +14,6 @@ import android.view.MenuItem;
 
 
 import com.example.luo_pc.news.R;
-import com.example.luo_pc.news.application.ManageApplication;
 import com.example.luo_pc.news.fragment.ImageFragment;
 import com.example.luo_pc.news.fragment.MeFragment;
 import com.example.luo_pc.news.fragment.ParentFragment;
@@ -25,9 +24,14 @@ import com.example.luo_pc.news.service.CheckForNetWork;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private static final String NEWSFRAGMENT = "NewsFragment";
+    private static final String WEATHERFRAGMENT = "WeatherFragment";
+    private static final String IMAGEFRAGMENT = "ImageFragment";
+    private static final String MEFRAGMENT = "MeFragment";
 
     private DrawerLayout drawer;
     private NavigationView nav_layout;
@@ -48,14 +52,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private FragmentTransaction transaction;
     private Fragment fragment;
+    private Intent startIntent;
+    private Map<String, Fragment> fragmentList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getSupportActionBar() != null) {
+        if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
-        setContentView(R.layout.fragment_main);
+        setContentView(R.layout.activity_main);
 
         initData();
         transaction = getSupportFragmentManager().beginTransaction();
@@ -64,7 +70,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         sp = getSharedPreferences("config", MODE_PRIVATE);
         edit = sp.edit();
-
 
         //这里的逻辑很容易搞混，写过一次数据库就不用再写了
         if (!sp.getBoolean("write once", false)) {
@@ -76,44 +81,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initView();
 
         nav_layout.setNavigationItemSelectedListener(this);
-    }
-
-    /**
-     * MainActivity被销毁时跳转到天气的逻辑
-     */
-    public void jumpToWeather(){
-        if (getIntent().getBooleanExtra("jump to weather", false)) {
-//            ArrayList<Activity> list = ((ManageApplication) getApplication()).getList();
-//            /*
-//            *  其实采用singletask启动的activity复用的时候会将他上面的activity出栈，但我这里
-//            *  想练习一下application级别变量的使用
-//            */
-//            for (Activity i : list) {
-//                i.finish();
-//                list.remove(i);
-//            }
-            weatherFragment = new WeatherFragment();
-            transaction.add(R.id.fl_content, weatherFragment);
-
-            if (meFragment != null) {
-                transaction.hide(meFragment);
-            }
-            if (newsListFragment != null) {
-                transaction.hide(newsListFragment);
-            }
-            if (imageFragment != null) {
-                transaction.hide(imageFragment);
-            }
-            if(settingFragment != null){
-                transaction.hide(settingFragment);
-            }
-
-//            getSupportFragmentManager().beginTransaction().replace(R.id.fl_content, new WeatherFragment()).commit();
-        } else {
-            //初始是新闻页面
-            newsListFragment = new ParentFragment();
-            transaction.add(R.id.fl_content, newsListFragment, "newsListFragment").commit();
-        }
     }
 
     @Override
@@ -130,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onDestroy() {
+        stopService(startIntent);
         super.onDestroy();
     }
 
@@ -138,21 +106,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         myIntent = intent;
     }
 
-
+    //-----------------------------initial method----------------------------------//
     private void initView() {
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         nav_layout = (NavigationView) findViewById(R.id.nav_layout);
-
     }
 
     private void initData() {
         //开启服务监听网络状态
-        Intent startIntent = new Intent();
+        startIntent = new Intent();
         startIntent.setClass(this, CheckForNetWork.class);
         startService(startIntent);
 
-//        fragmentList.add(settingFragment);
-
+        //当你new一个Fragment时，你需要向这个map里添加这个Fragment
+        fragmentList = new HashMap<String, Fragment>();
     }
 
 
@@ -163,29 +130,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 item.setChecked(true);
                 transaction = getSupportFragmentManager().beginTransaction();
                 fragment = getSupportFragmentManager().findFragmentByTag("newsListFragment");
+
+                hideAllFragment(fragmentList, getSupportFragmentManager().beginTransaction());
+
                 if (fragment != null) {
                     transaction.show(newsListFragment);
                 } else {
                     transaction.add(R.id.fl_content, newsListFragment, "newsListFragment");
-                }
-
-                if (weatherFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("weatherFragment"));
-                }
-                if (imageFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("imageFragment"));
-                }
-                if (meFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("meFragment"));
-                }
-                if(settingFragment != null){
-                    transaction.hide(settingFragment);
+                    fragmentList.put(NEWSFRAGMENT, newsListFragment);
                 }
 
                 transaction.commit();
-
-//                transaction.add(newsListFragment,"newsListFragment").commit();
-//                getSupportFragmentManager().beginTransaction().replace(R.id.fl_content, new ParentFragment)).commit();
                 drawer.closeDrawers();
                 break;
 
@@ -199,31 +154,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         @Override
                         public void run() {
                             writeDatabase();
+                            //TODO 加一个数据库写入完成的回调
                         }
                     }).start();
                     edit.putBoolean("firstOpen", false).commit();
                     edit.putBoolean("write once", true).commit();
                 }
 
+                hideAllFragment(fragmentList, getSupportFragmentManager().beginTransaction());
+
                 if (fragment != null) {
                     transaction.show(weatherFragment);
                 } else {
                     weatherFragment = new WeatherFragment();
                     transaction.add(R.id.fl_content, weatherFragment, "weatherFragment");
+                    fragmentList.put(WEATHERFRAGMENT, weatherFragment);
                 }
 
-                if (newsListFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("newsListFragment"));
-                }
-                if (imageFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("imageFragment"));
-                }
-                if (meFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("meFragment"));
-                }
-                if(settingFragment != null){
-                    transaction.hide(settingFragment);
-                }
 
                 transaction.commit();
 
@@ -234,92 +181,116 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_picture:
                 transaction = getSupportFragmentManager().beginTransaction();
                 fragment = getSupportFragmentManager().findFragmentByTag("imageFragment");
+
+                hideAllFragment(fragmentList, getSupportFragmentManager().beginTransaction());
+
                 if (fragment != null) {
                     transaction.show(imageFragment);
                 } else {
                     imageFragment = new ImageFragment();
                     transaction.add(R.id.fl_content, imageFragment, "imageFragment");
-                }
-
-
-                if (weatherFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("weatherFragment"));
-                }
-                if (newsListFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("newsListFragment"));
-                }
-                if (meFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("meFragment"));
-                }
-                if(settingFragment != null){
-                    transaction.hide(settingFragment);
+                    fragmentList.put(IMAGEFRAGMENT, imageFragment);
                 }
 
                 transaction.commit();
 
-//                getSupportFragmentManager().beginTransaction().replace(R.id.fl_content, new ImageFragment()).commit();
                 drawer.closeDrawers();
-//                Log.i(TAG,"caonima");
                 break;
 
             case R.id.nav_me:
                 transaction = getSupportFragmentManager().beginTransaction();
 
+                hideAllFragment(fragmentList, getSupportFragmentManager().beginTransaction());
                 if (meFragment != null) {
                     transaction.show(meFragment);
                 } else {
                     meFragment = new MeFragment();
                     transaction.add(R.id.fl_content, meFragment, "meFragment");
+                    fragmentList.put(MEFRAGMENT, meFragment);
                 }
 
-                if (weatherFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("weatherFragment"));
-                }
-                if (newsListFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("newsListFragment"));
-                }
-                if (imageFragment != null) {
-                    transaction.hide(getSupportFragmentManager().findFragmentByTag("imageFragment"));
-                }
-                if(settingFragment != null){
-                    transaction.hide(settingFragment);
-                }
 
                 transaction.commit();
-//                getSupportFragmentManager().beginTransaction().replace(R.id.fl_content, new MeFragment()).commit();
                 drawer.closeDrawers();
                 break;
 
-            case R.id.nav_setting:
-                transaction = getSupportFragmentManager().beginTransaction();
-                if(settingFragment != null){
-                    transaction.show(settingFragment);
-                }else{
-                    settingFragment = new SettingFragment();
-                    transaction.add(R.id.fl_content,settingFragment,"settingFragment");
-                }
-
-                if (weatherFragment != null) {
-                    transaction.hide(weatherFragment);
-                }
-                if (newsListFragment != null) {
-                    transaction.hide(newsListFragment);
-                }
-                if (imageFragment != null) {
-                    transaction.hide(imageFragment);
-                }
-                if(meFragment != null){
-                    transaction.hide(meFragment);
-                }
-
-                transaction.commit();
-
+//            case R.id.nav_setting:
+//                transaction = getSupportFragmentManager().beginTransaction();
+//                if(settingFragment != null){
+//                    transaction.show(settingFragment);
+//                }else{
+//                    settingFragment = new SettingFragment();
+//                    transaction.add(R.id.fl_content,settingFragment,"settingFragment");
+//                }
+//
+//                if (weatherFragment != null) {
+//                    transaction.hide(weatherFragment);
+//                }
+//                if (newsListFragment != null) {
+//                    transaction.hide(newsListFragment);
+//                }
+//                if (imageFragment != null) {
+//                    transaction.hide(imageFragment);
+//                }
+//                if(meFragment != null){
+//                    transaction.hide(meFragment);
+//                }
+//
+//                transaction.commit();
+//
+//                break;
+            default:
                 break;
         }
         return true;
     }
 
+    //-----------------------------------------my method----------------------------------------//
 
+    /**
+     * 这个方法用来隐藏所有的fragment,只有fragment在new的时候才会被添加到这个集合
+     */
+    private void hideAllFragment(Map<String, Fragment> fragmentList, FragmentTransaction transaction) {
+        for (Map.Entry<String, Fragment> entry : fragmentList.entrySet()) {
+            Fragment fragment = entry.getValue();
+            //如果存在fragment被销毁的情况，那么将其从这个map中移除
+            if (fragment == null)
+                fragmentList.remove(entry.getKey());
+
+            transaction.hide(fragment);
+        }
+        transaction.commit();
+    }
+
+    /**
+     * MainActivity被销毁时跳转到天气的逻辑
+     */
+    public void jumpToWeather() {
+        if (getIntent().getBooleanExtra("jump to weather", false)) {
+            weatherFragment = new WeatherFragment();
+            transaction.add(R.id.fl_content, weatherFragment);
+
+            if (meFragment != null) {
+                transaction.hide(meFragment);
+            }
+            if (newsListFragment != null) {
+                transaction.hide(newsListFragment);
+            }
+            if (imageFragment != null) {
+                transaction.hide(imageFragment);
+            }
+            if (settingFragment != null) {
+                transaction.hide(settingFragment);
+            }
+
+        } else {
+            //初始是新闻页面
+            newsListFragment = new ParentFragment();
+            fragmentList.put(NEWSFRAGMENT, newsListFragment);
+
+            transaction.add(R.id.fl_content, newsListFragment, "newsListFragment").commit();
+        }
+    }
 
     /**
      * 将raw目录下的info.db写到databases文件下
@@ -356,15 +327,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     /**
      * 在County跳转到MainActivity之后展示weatherFragment
+     *
      * @param jump 是否跳转
      */
     public void jumpToWeather(boolean jump) {
         if (jump) {
-            ArrayList<Activity> list = ((ManageApplication) getApplication()).getList();
-            for (Activity i : list) {
-                i.finish();
-            }
-
+            //没必要，singletask的activity没必要这么干
+//            ArrayList<Activity> list = ((ManageApplication) getApplication()).getList();
+//            for (Activity i : list) {
+//                i.finish();
+//            }
             transaction = getSupportFragmentManager().beginTransaction();
             weatherFragment.onRefresh(myIntent.getStringExtra("weather code"));
             transaction.show(weatherFragment);
@@ -383,8 +355,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
             transaction.commit();
-
-//            getSupportFragmentManager().beginTransaction().replace(R.id.fl_content, new WeatherFragment(myIntent)).commit();
         }
     }
 

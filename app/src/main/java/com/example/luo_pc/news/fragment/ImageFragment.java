@@ -17,6 +17,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -109,9 +110,14 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
                             if (meFragment != null) {
                                 transition.hide(meFragment);
                             }
+
+                            MenuItem item = (MenuItem)getActivity().findViewById(R.id.nav_news);
+                            item.setChecked(true);
                             transition.commit();
                         }
                     });
+
+                    builder.setCancelable(false);
 
                     builder.show();
                 }

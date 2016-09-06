@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <com.example.luo_pc.news.view.SquareImageView
+        <com.example.luo_pc.news.widget.SquareImageView
             android:id="@+id/siv_img"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

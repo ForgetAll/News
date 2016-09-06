@@ -2,7 +2,6 @@ package com.example.luo_pc.news.fragment;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +31,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -40,9 +39,9 @@ import java.util.ArrayList;
  */
 public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private String keyword;
-    private String TAG = "NewsListFragment";
+    private final static String TAG = "NewsListFragment";
 
-    private ArrayList<NewsBean> newsList = null;
+    private List<NewsBean> newsList = null;
     private RecyclerView recycle_news;
     private NewsListAdapter newsListAdapter;
     private Context context;
@@ -95,16 +94,16 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
             File cacheFile = FileUtils.getDisCacheDir(context, "NewsBean" + keyword);
             if (cacheFile.exists()) {
                 try {
+                    //优先读取缓存数据作展示
                     ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cacheFile));
                     ArrayList<NewsBean> list = (ArrayList<NewsBean>) ois.readObject();
                     newsListAdapter.setData(list);
-                    Log.i(TAG, list.size() + " ");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
-
+        //加载实时数据
         new DownloadTask().execute(getUrl());
 
         return view;
@@ -136,7 +135,11 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
     };
 
 
-    //拼接url
+    /**
+     * 拼接url
+     *
+     * @return 新闻的url
+     */
     private String getUrl() {
         StringBuilder sb = new StringBuilder();
         switch (keyword) {
@@ -171,7 +174,7 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
         public void onItemClick(View view, int position) {
             Intent intent = new Intent();
             intent.setClass(getActivity(), NewsActivity.class);
-            intent.putExtra("url", newsList.get(position).getUrl());
+            intent.putExtra("url", newsList.get(position).getUrl_3w());
 
             startActivity(intent);
         }
@@ -189,35 +192,33 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
         //刷新置pageIndex为0获取最新数据
         pageIndex = 0;
 
-        if (newsList != null) {
-            newsList.clear();
-        }
+//        if (newsList != null) {
+//            newsList.clear();
+//        }
 
         new DownloadTask().execute(getUrl());
-//        newsListAdapter.notifyDataSetChanged();
 
     }
 
     /**
      * 请求新闻信息
      */
-    class DownloadTask extends AsyncTask<String, Integer, ArrayList<NewsBean>> {
+    class DownloadTask extends AsyncTask<String, Integer, List<NewsBean>> {
 
         private ObjectOutputStream oos;
 
         @Override
-        protected ArrayList<NewsBean> doInBackground(String... params) {
+        protected List<NewsBean> doInBackground(String... params) {
             try {
                 String infoUrl = params[0];
                 HttpUtils.getJsonString(infoUrl, new HttpUtils.HttpCallbackListener() {
                     @Override
                     public void onFinish(String response) {
                         newsList = JsonUtils.readJsonNewsBean(response, keyword);
-
+                        //在第一次加载最新信息时，将这个信息集合缓存
                         if (count == 0) {
                             if (context != null) {
                                 File cacheFile = FileUtils.getDisCacheDir(context, "NewsBean" + keyword);
-
                                 try {
                                     oos = new ObjectOutputStream(new FileOutputStream(cacheFile));
                                     oos.writeObject(newsList);
@@ -228,7 +229,7 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
                                     if (oos != null) {
                                         try {
                                             oos.close();
-                                        }catch (IOException e){
+                                        } catch (IOException e) {
                                             e.printStackTrace();
                                         }
                                     }
@@ -250,15 +251,18 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
         }
 
         @Override
-        protected void onPostExecute(ArrayList<NewsBean> newsList) {
+        protected void onPostExecute(List<NewsBean> newsList) {
             if (newsList == null) {
                 return;
             } else {
-                NewsListFragment.this.newsList = newsList;
-                newsListAdapter.setData(newsList);
+                ArrayList<NewsBean> tempList = new ArrayList<NewsBean>();
+                tempList.addAll(newsList);
+                tempList.removeAll(NewsListFragment.this.newsList);
+                tempList.addAll(newsList);
+                NewsListFragment.this.newsList = tempList;
+                newsListAdapter.setData(NewsListFragment.this.newsList);
 //                recycle_news.setLayoutManager(layoutManager);
 //                recycle_news.setAdapter(newsListAdapter);
-                newsListAdapter.notifyDataSetChanged();
 
             }
             sr_refresh.setRefreshing(false);
@@ -269,12 +273,12 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
     /**
      * 加载更多
      */
-    class UpdateTask extends AsyncTask<String, Integer, ArrayList<NewsBean>> {
+    class UpdateTask extends AsyncTask<String, Integer, List<NewsBean>> {
 
-        private ArrayList<NewsBean> updateNewsList;
+        private List<NewsBean> updateNewsList;
 
         @Override
-        protected ArrayList<NewsBean> doInBackground(String... params) {
+        protected List<NewsBean> doInBackground(String... params) {
             try {
                 String infoUrl = params[0];
                 HttpUtils.getJsonString(infoUrl, new HttpUtils.HttpCallbackListener() {
@@ -306,7 +310,7 @@ public class NewsListFragment extends Fragment implements SwipeRefreshLayout.OnR
         }
 
         @Override
-        protected void onPostExecute(ArrayList<NewsBean> updateNewsList) {
+        protected void onPostExecute(List<NewsBean> updateNewsList) {
             if (updateNewsList == null) {
                 Toast.makeText(getContext(), "请求数据失败", Toast.LENGTH_SHORT).show();
             } else {

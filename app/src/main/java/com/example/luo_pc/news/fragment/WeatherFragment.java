@@ -7,7 +7,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.luo_pc.news.R;
-import com.example.luo_pc.news.activity.ProvinceManage;
+import com.example.luo_pc.news.activity.ProvinceManageActivity;
 import com.example.luo_pc.news.adapter.WeatherAdapter;
 import com.example.luo_pc.news.bean.WeatherBean;
 import com.example.luo_pc.news.utils.FileUtils;
@@ -171,7 +170,7 @@ public class WeatherFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
-                intent.setClass(getActivity(), ProvinceManage.class);
+                intent.setClass(getActivity(), ProvinceManageActivity.class);
                 startActivity(intent);
             }
         });

@@ -3,18 +3,15 @@ package com.example.luo_pc.news.adapter;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.luo_pc.news.R;
 import com.example.luo_pc.news.bean.ImageBean;
-import com.example.luo_pc.news.view.SquareImageView;
+import com.example.luo_pc.news.widget.SquareImageView;
 
 import java.util.ArrayList;
 

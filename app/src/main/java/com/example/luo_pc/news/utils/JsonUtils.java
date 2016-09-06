@@ -23,14 +23,10 @@ public class JsonUtils {
     static final String TAG = "JsonUtils";
     /**
      * 将获取到的json转换为新闻列表对象
-     *
-     * @param res
-     * @param value
-     * @return
      */
-    public static ArrayList<NewsBean> readJsonNewsBean(String res, String value) {
+    public static List<NewsBean> readJsonNewsBean(String res, String value) {
 
-        ArrayList<NewsBean> beans = new ArrayList<NewsBean>();
+        List<NewsBean> beans = new ArrayList<NewsBean>();
         try {
             JsonParser parser = new JsonParser();
             JsonObject jsonObj = parser.parse(res).getAsJsonObject();
@@ -59,7 +55,6 @@ public class JsonUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         return beans;
     }

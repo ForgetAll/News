@@ -22,9 +22,9 @@
             android:icon="@drawable/me"
             android:title="@string/aboutme" />
 
-        <item
-            android:id="@+id/nav_setting"
-            android:icon="@drawable/settings"
-            android:title="@string/settings" />
+        <!--<item-->
+            <!--android:id="@+id/nav_setting"-->
+            <!--android:icon="@drawable/settings"-->
+            <!--android:title="@string/settings" />-->
     </group>
 </menu>

@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * Created by luo-pc on 2016/5/13.
  */
-public class NewsBean implements Serializable{
+public class NewsBean implements Serializable {
     /**
      * docid
      */
@@ -39,7 +39,7 @@ public class NewsBean implements Serializable{
     /**
      * url
      */
-    private String url;
+    private String url_3w;
 
     public String getDocid() {
         return docid;
@@ -97,15 +97,21 @@ public class NewsBean implements Serializable{
         this.tag = tag;
     }
 
-    public String getUrl() {
-        return url;
+    public String getUrl_3w() {
+        return url_3w;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setUrl_3w(String url_3w) {
+        this.url_3w = url_3w;
     }
 
-    public boolean equals(NewsBean newsBean) {
-        return this.url == newsBean.url;
+//    @Override
+//    public boolean equals(Object o) {
+//        return false;
+//    }
+
+    @Override
+    public int hashCode() {
+        return 13 + this.url_3w.hashCode();
     }
 }

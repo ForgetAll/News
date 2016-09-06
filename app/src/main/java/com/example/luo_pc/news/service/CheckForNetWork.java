@@ -36,7 +36,6 @@ public class CheckForNetWork extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-
         return null;
     }
 

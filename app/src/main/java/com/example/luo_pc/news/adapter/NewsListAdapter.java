@@ -13,6 +13,7 @@ import com.example.luo_pc.news.R;
 import com.example.luo_pc.news.bean.NewsBean;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by luo-pc on 2016/5/15.
@@ -25,14 +26,14 @@ public class NewsListAdapter extends RecyclerView.Adapter {
     private static final int TYPE_FOOTER = 1;
 
     public final String TAG = "NewsListAdapter";
-    private ArrayList<NewsBean> newsList;
+    private List<NewsBean> newsList;
     private Context context;
     private OnItemClickListener onItemClickListener;
 
     //是否显示脚布局
     private boolean showFooter = true;
 
-    public void setData(ArrayList<NewsBean> newsList) {
+    public void setData(List<NewsBean> newsList) {
         this.newsList = newsList;
         this.notifyDataSetChanged();
     }
