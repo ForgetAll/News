@@ -41,10 +41,12 @@ public class NewsBean implements Serializable {
      */
     private String url_3w;
 
+    @SuppressWarnings("unused")
     public String getDocid() {
         return docid;
     }
 
+    @SuppressWarnings("unused")
     public void setDocid(String docid) {
         this.docid = docid;
     }
@@ -53,6 +55,7 @@ public class NewsBean implements Serializable {
         return title;
     }
 
+    @SuppressWarnings("unused")
     public void setTitle(String title) {
         this.title = title;
     }
@@ -61,6 +64,7 @@ public class NewsBean implements Serializable {
         return digest;
     }
 
+    @SuppressWarnings("unused")
     public void setDigest(String digest) {
         this.digest = digest;
     }
@@ -69,6 +73,7 @@ public class NewsBean implements Serializable {
         return imgsrc;
     }
 
+    @SuppressWarnings("unused")
     public void setImgsrc(String imgsrc) {
         this.imgsrc = imgsrc;
     }
@@ -81,10 +86,12 @@ public class NewsBean implements Serializable {
         this.source = source;
     }
 
+    @SuppressWarnings("unused")
     public String getPtime() {
         return ptime;
     }
 
+    @SuppressWarnings("unused")
     public void setPtime(String ptime) {
         this.ptime = ptime;
     }
@@ -101,17 +108,20 @@ public class NewsBean implements Serializable {
         return url_3w;
     }
 
+    @SuppressWarnings("unused")
     public void setUrl_3w(String url_3w) {
         this.url_3w = url_3w;
     }
 
-//    @Override
-//    public boolean equals(Object o) {
-//        return false;
-//    }
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof NewsBean)
+            return ((NewsBean) o).url_3w.equals(url_3w);
+        return false;
+    }
 
     @Override
     public int hashCode() {
-        return 13 + this.url_3w.hashCode();
+        return 13 + this.url_3w.hashCode() + this.getDocid().hashCode();
     }
 }

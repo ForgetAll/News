@@ -99,6 +99,11 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
         e.printStackTrace();
     }
 
+    @Override
+    public void onFaile() {
+        //暂时没想好做什么处理
+    }
+
     //--------------------------------system and constructor-------------------------------//
 
     public static NewsListFragment2 newInstance(String type) {
@@ -123,7 +128,7 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
         if (newsList != null) {
             newsList.clear();
         }
-        newsPresenter.getNews(pageIndex, mType);
+        newsPresenter.getNews(pageIndex, mType, mContext);
         refresh.setRefreshing(false);
     }
 
@@ -143,7 +148,7 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
                     && lastVisibleItem + 1 == adapter.getItemCount()
                     && adapter.isShowFooter()) {
                 //加载更多
-                newsPresenter.getNews(pageIndex + 20, mType);
+                newsPresenter.getNews(pageIndex + 20, mType, mContext);
             }
         }
     };

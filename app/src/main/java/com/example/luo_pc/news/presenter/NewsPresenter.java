@@ -1,5 +1,7 @@
 package com.example.luo_pc.news.presenter;
 
+import android.content.Context;
+
 import com.example.luo_pc.news.bean.NewsBean;
 import com.example.luo_pc.news.model.NewsListModelImpl;
 import com.example.luo_pc.news.view.NewsListView;
@@ -18,8 +20,8 @@ public class NewsPresenter implements NewsListModelImpl.GetNewsStatus<List<NewsB
         newsListModel = new NewsListModelImpl();
     }
 
-    public void getNews(int pageIndex, String type) {
-        newsListModel.getNews(pageIndex, type, this);
+    public void getNews(int pageIndex, String type, Context context) {
+        newsListModel.getNews(pageIndex, type, this,context);
     }
 
     @Override
@@ -30,5 +32,10 @@ public class NewsPresenter implements NewsListModelImpl.GetNewsStatus<List<NewsB
     @Override
     public void onFailed(Exception e) {
         newsListView.onFaile(e);
+    }
+
+    @Override
+    public void onFailed() {
+        newsListView.onFaile();
     }
 }

@@ -13,4 +13,8 @@ public interface NewsListView<T> {
      * 获取数据失败
      */
     void onFaile(Exception e);
+    /**
+     * 从文件读取数据失败
+     */
+    void onFaile();
 }
