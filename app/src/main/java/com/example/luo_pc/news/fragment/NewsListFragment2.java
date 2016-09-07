@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,8 +21,10 @@ import java.util.List;
 
 /**
  * Created by Luo_xiasuhuei321@163.com on 2016/9/6.
+ * 懒加载~
  */
 public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<List<NewsBean>>, SwipeRefreshLayout.OnRefreshListener {
+    @SuppressWarnings("unused")
     private static final String TAG = "NewsListFragment2";
 
     private List<NewsBean> newsList;

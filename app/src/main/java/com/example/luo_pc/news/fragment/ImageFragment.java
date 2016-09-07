@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -110,7 +111,7 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
                                 transition.hide(meFragment);
                             }
 
-                            MenuItem item = (MenuItem)getActivity().findViewById(R.id.nav_news);
+                            MenuItem item = (MenuItem) getActivity().findViewById(R.id.nav_news);
                             item.setChecked(true);
                             transition.commit();
                         }
@@ -351,10 +352,12 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
     }
 
     private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
+        private int[] a = new int[2];
 
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
             super.onScrolled(recyclerView, dx, dy);
+            staggeredGridLayoutManager.findLastVisibleItemPositions(a);
         }
 
         @Override
@@ -362,12 +365,16 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
             super.onScrollStateChanged(recyclerView, newState);
             //SCROLL_STATE_IDLE
             //The RecyclerView is not currently scrolling.
-            if (imageListAdapter.getisShow() && newState == RecyclerView.SCROLL_STATE_IDLE) {
+            if (imageListAdapter.getisShow() && newState == RecyclerView.SCROLL_STATE_IDLE &&
+                    a[1] + 1 == imageListAdapter.getItemCount()) {
                 //加载更多
                 pageIndex++;
                 new UpdateTask().execute(Urls.IMAGE_URL + pageIndex);
+                for (int i : a) {
+                    Log.e(TAG, i + "");
+                }
             }
-//            staggeredGridLayoutManager.invalidateSpanAssignments();
+            staggeredGridLayoutManager.invalidateSpanAssignments();
         }
     };
 }
