@@ -333,11 +333,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     public void jumpToWeather(boolean jump) {
         if (jump) {
-            //没必要，singletask的activity没必要这么干
-//            ArrayList<Activity> list = ((ManageApplication) getApplication()).getList();
-//            for (Activity i : list) {
-//                i.finish();
-//            }
             transaction = getSupportFragmentManager().beginTransaction();
             weatherFragment.onRefresh(myIntent.getStringExtra("weather code"));
             transaction.show(weatherFragment);

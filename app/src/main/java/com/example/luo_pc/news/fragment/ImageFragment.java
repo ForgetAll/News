@@ -367,7 +367,7 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
                 pageIndex++;
                 new UpdateTask().execute(Urls.IMAGE_URL + pageIndex);
             }
-            staggeredGridLayoutManager.invalidateSpanAssignments();
+//            staggeredGridLayoutManager.invalidateSpanAssignments();
         }
     };
 }

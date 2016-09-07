@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.luo_pc.news"
-        minSdkVersion 15
+        minSdkVersion 14
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -31,4 +31,6 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.1.0'
 //    compile 'com.github.chrisbanes:PhotoView:1.2.6'
     compile 'com.zhy:okhttputils:2.6.2'
+    compile 'io.reactivex:rxjava:1.1.5'
+    compile 'io.reactivex:rxandroid:1.2.0'
 }

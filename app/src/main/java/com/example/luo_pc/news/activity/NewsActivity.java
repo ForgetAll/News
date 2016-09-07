@@ -64,14 +64,14 @@ public class NewsActivity extends Activity {
         });
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if((keyCode == KeyEvent.KEYCODE_BACK) && wv_news.canGoBack()){
-            wv_news.goBack();
-            return true;
-        }
-        this.finish();
-        return true;
-    }
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        if((keyCode == KeyEvent.KEYCODE_BACK) && wv_news.canGoBack()){
+//            wv_news.goBack();
+//            return true;
+//        }
+//        this.finish();
+//        return true;
+//    }
 
 }

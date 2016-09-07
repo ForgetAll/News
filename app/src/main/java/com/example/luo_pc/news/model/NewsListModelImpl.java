@@ -13,6 +13,8 @@ import com.zhy.http.okhttp.callback.StringCallback;
 import java.util.List;
 
 import okhttp3.Call;
+import rx.Observable;
+import rx.Subscriber;
 
 /**
  * Created by Luo_xiasuhuei321@163.com on 2016/9/6.
@@ -92,4 +94,12 @@ public class NewsListModelImpl implements NewsListModel<List<NewsBean>> {
 
         void onFailed(Exception e);
     }
+
+    Observable<String> network = Observable.create(new Observable.OnSubscribe<String>() {
+
+        @Override
+        public void call(Subscriber<? super String> subscriber) {
+
+        }
+    });
 }

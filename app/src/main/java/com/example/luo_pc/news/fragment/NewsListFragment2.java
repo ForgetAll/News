@@ -1,5 +1,6 @@
 package com.example.luo_pc.news.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.luo_pc.news.R;
+import com.example.luo_pc.news.activity.NewsActivity;
 import com.example.luo_pc.news.adapter.NewsListAdapter;
 import com.example.luo_pc.news.bean.NewsBean;
 import com.example.luo_pc.news.presenter.NewsPresenter;
@@ -70,6 +72,7 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
         rcNewsList.setLayoutManager(manager);
         rcNewsList.setAdapter(adapter);
         rcNewsList.addOnScrollListener(scrollListener);
+        adapter.setOnItemClickListener(itemClickListener);
         return view;
     }
 
@@ -84,11 +87,10 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
             //都写一样的名字……差点被自己坑了
             if (newsList == null || newsList.size() == 0) {
                 adapter.isShowFooter(false);
-            }
-            this.newsList.addAll(newsList);
+            } else
+                this.newsList.addAll(newsList);
         }
         adapter.setData(this.newsList);
-        Log.e(TAG, "" + newsList.size());
         pageIndex += 20;
     }
 
@@ -143,6 +145,16 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
                 //加载更多
                 newsPresenter.getNews(pageIndex + 20, mType);
             }
+        }
+    };
+
+    NewsListAdapter.OnItemClickListener itemClickListener = new NewsListAdapter.OnItemClickListener() {
+        @Override
+        public void onItemClick(View view, int position) {
+            Intent intent = new Intent();
+            intent.setClass(mContext, NewsActivity.class);
+            intent.putExtra("url", newsList.get(position).getUrl_3w());
+            startActivity(intent);
         }
     };
 

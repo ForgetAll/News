@@ -9,8 +9,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.luo_pc.news.R;
 import com.example.luo_pc.news.bean.ImageBean;
+import com.example.luo_pc.news.widget.RatioImageView;
 import com.example.luo_pc.news.widget.SquareImageView;
 
 import java.util.ArrayList;
@@ -63,8 +65,11 @@ public class ImageListAdapter extends RecyclerView.Adapter {
         if (holder instanceof ItemViewHolder) {
             final ItemViewHolder vh = (ItemViewHolder) holder;
             vh.tv_img_desc.setText(imageList.get(position).getDesc());
-            Glide.with(context).load(imageList.get(position).getUrl())
-                    .error(R.drawable.ic_image_loadfail).crossFade().into(vh.siv_img);
+            Glide.with(context)
+                    .load(imageList.get(position).getUrl())
+                    .error(R.drawable.ic_image_loadfail)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .crossFade().into(vh.siv_img);
 
 
 //            Log.i(TAG, "height=" + height + "width=" + width);
@@ -108,12 +113,12 @@ public class ImageListAdapter extends RecyclerView.Adapter {
 
     class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private final SquareImageView siv_img;
+        private final RatioImageView siv_img;
         private final TextView tv_img_desc;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
-            siv_img = (SquareImageView) itemView.findViewById(R.id.siv_img);
+            siv_img = (RatioImageView) itemView.findViewById(R.id.siv_img);
             tv_img_desc = (TextView) itemView.findViewById(R.id.tv_img_desc);
 
             itemView.setOnClickListener(this);
