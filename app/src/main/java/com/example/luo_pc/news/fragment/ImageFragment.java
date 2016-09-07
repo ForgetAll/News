@@ -260,7 +260,6 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
             } else {
 //                imageListAdapter.setisShow(false);
                 imageListAdapter.setData(ImageFragment.this.imageList);
-                imageListAdapter.notifyDataSetChanged();
             }
         }
     }

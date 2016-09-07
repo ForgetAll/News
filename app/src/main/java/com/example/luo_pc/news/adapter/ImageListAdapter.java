@@ -13,7 +13,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.luo_pc.news.R;
 import com.example.luo_pc.news.bean.ImageBean;
 import com.example.luo_pc.news.widget.RatioImageView;
-import com.example.luo_pc.news.widget.SquareImageView;
 
 import java.util.ArrayList;
 
@@ -38,8 +37,10 @@ public class ImageListAdapter extends RecyclerView.Adapter {
     }
 
     public void setData(ArrayList<ImageBean> imageList) {
+        if (this.imageList != null) {
+            notifyItemRangeChanged(this.imageList.size() + 1, imageList.size());
+        }
         this.imageList = imageList;
-        notifyDataSetChanged();
 
     }
 
