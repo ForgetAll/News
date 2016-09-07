@@ -9,15 +9,15 @@ import java.util.ArrayList;
 /**
  * Created by luo-pc on 2016/5/14.
  */
-public class mPagerAdapter extends FragmentPagerAdapter {
+public class NewsPagerAdapter extends FragmentPagerAdapter {
     private ArrayList<Fragment> fragmentList;
     private ArrayList<String> titleList;
 
-    public mPagerAdapter(FragmentManager fm) {
+    public NewsPagerAdapter(FragmentManager fm) {
         super(fm);
     }
 
-    public mPagerAdapter(FragmentManager fm, ArrayList<Fragment> fragments, ArrayList<String> titleList) {
+    public NewsPagerAdapter(FragmentManager fm, ArrayList<Fragment> fragments, ArrayList<String> titleList) {
         super(fm);
         this.fragmentList = fragments;
         this.titleList = titleList;

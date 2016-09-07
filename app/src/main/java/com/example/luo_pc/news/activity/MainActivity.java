@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (fragment != null) {
                     transaction.show(newsListFragment);
                 } else {
+                    fragment = new ParentFragment();
                     transaction.add(R.id.fl_content, newsListFragment, "newsListFragment");
                     fragmentList.put(NEWSFRAGMENT, newsListFragment);
                 }

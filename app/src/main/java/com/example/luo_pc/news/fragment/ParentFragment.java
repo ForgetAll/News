@@ -11,8 +11,7 @@ import android.view.ViewGroup;
 
 
 import com.example.luo_pc.news.R;
-import com.example.luo_pc.news.adapter.mPagerAdapter;
-import com.example.luo_pc.news.bean.NewsBean;
+import com.example.luo_pc.news.adapter.NewsPagerAdapter;
 import com.example.luo_pc.news.utils.Urls;
 
 import java.util.ArrayList;
@@ -34,8 +33,7 @@ public class ParentFragment extends Fragment {
 
         initView(view);
         initData();
-        vp_content.setOffscreenPageLimit(3);
-        vp_content.setAdapter(new mPagerAdapter(getChildFragmentManager(), fragmentList, titleList));
+        vp_content.setAdapter(new NewsPagerAdapter(getChildFragmentManager(), fragmentList, titleList));
         tab_title.setupWithViewPager(vp_content);
 
         return view;
@@ -48,32 +46,32 @@ public class ParentFragment extends Fragment {
         titleList.add("汽车");
         titleList.add("笑话");
 
-        NewsListFragment hotNewsList = new NewsListFragment();
-        hotNewsList.setKeyword(Urls.TOP_ID);
+//        NewsListFragment hotNewsList = new NewsListFragment();
+//        hotNewsList.setKeyword(Urls.TOP_ID);
+//
+//        NewsListFragment sportNewsList = new NewsListFragment();
+//        sportNewsList.setKeyword(Urls.NBA_ID);
+//
+//        NewsListFragment carNewsList = new NewsListFragment();
+//        carNewsList.setKeyword(Urls.CAR_ID);
+//
+//        NewsListFragment jokeNewsList = new NewsListFragment();
+//        jokeNewsList.setKeyword(Urls.JOKE_ID);
 
-        NewsListFragment sportNewsList = new NewsListFragment();
-        sportNewsList.setKeyword(Urls.NBA_ID);
-
-        NewsListFragment carNewsList = new NewsListFragment();
-        carNewsList.setKeyword(Urls.CAR_ID);
-
-        NewsListFragment jokeNewsList = new NewsListFragment();
-        jokeNewsList.setKeyword(Urls.JOKE_ID);
+        NewsListFragment2 hotNewsList = NewsListFragment2.newInstance(NewsListFragment2.TOP_FRAGMENT);
+        NewsListFragment2 sportNewsList = NewsListFragment2.newInstance(NewsListFragment2.NBA_FRAGMENT);
+        NewsListFragment2 carNewsList = NewsListFragment2.newInstance(NewsListFragment2.CAR_FRAGMENT);
+        NewsListFragment2 jokeNewsList = NewsListFragment2.newInstance(NewsListFragment2.JOKE_FRAGMENT);
 
         fragmentList.add(hotNewsList);
         fragmentList.add(sportNewsList);
         fragmentList.add(carNewsList);
         fragmentList.add(jokeNewsList);
-
     }
 
     private void initView(View view) {
         tab_title = (TabLayout) view.findViewById(R.id.tab_title);
         vp_content = (ViewPager) view.findViewById(R.id.vp_content);
     }
-
-
-
-
 
 }

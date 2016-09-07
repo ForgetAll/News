@@ -33,6 +33,14 @@ public abstract class BaseLazyFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if(getUserVisibleHint()){
+            setUserVisibleHint(true);
+        }
+    }
+
+    @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (getUserVisibleHint()) {

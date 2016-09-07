@@ -86,7 +86,6 @@ public class ImageFragment extends Fragment implements ImageListAdapter.OnItemCl
                     builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-//                            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fl_content, new ParentFragment()).commit();
                             FragmentTransaction transition = getActivity().getSupportFragmentManager().beginTransaction();
                             Fragment fragment = getActivity().getSupportFragmentManager().findFragmentByTag("newsListFragment");
                             if (fragment != null) {
