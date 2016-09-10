@@ -17,6 +17,4 @@ public class FileUtils {
         }
         return new File(cachePath + File.separator + data);
     }
-
-
 }

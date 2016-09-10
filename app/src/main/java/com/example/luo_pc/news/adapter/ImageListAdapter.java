@@ -66,16 +66,13 @@ public class ImageListAdapter extends RecyclerView.Adapter {
         if (holder instanceof ItemViewHolder) {
             final ItemViewHolder vh = (ItemViewHolder) holder;
             vh.tv_img_desc.setText(imageList.get(position).getDesc());
+
             Glide.with(context)
                     .load(imageList.get(position).getUrl())
                     .error(R.drawable.ic_image_loadfail)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .crossFade().into(vh.siv_img);
 
-
-//            Log.i(TAG, "height=" + height + "width=" + width);
-//        ViewGroup.LayoutParams params = itemViewHolder.siv_img.getLayoutParams();
-//        params.height = height;
         }
     }
 

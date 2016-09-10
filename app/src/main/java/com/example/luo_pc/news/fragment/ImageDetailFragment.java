@@ -135,10 +135,7 @@ public class ImageDetailFragment extends DialogFragment implements View.OnLongCl
         Bitmap bitmap = bitmapDrawable.getBitmap();
         if (bitmap != null) {
             try {
-
                 final String absolutePath = getFilePathByContentResolver(getActivity(), Uri.parse(path));
-
-
                 if (path != null) {
                     Toast.makeText(getActivity(), "已保存到" + absolutePath, Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse(absolutePath));

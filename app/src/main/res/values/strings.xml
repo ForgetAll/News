@@ -8,4 +8,5 @@
     <string name="pictures">图片</string>
     <string name="aboutme">关于我</string>
     <string name="settings">设置</string>
+    <string name="IMAGE_CACHE">ImageBean</string>
 </resources>

@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,19 +91,23 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
                 adapter.isShowFooter(false);
             } else
                 this.newsList.addAll(newsList);
+            Log.e(TAG, "成功");
         }
         adapter.setData(this.newsList);
         pageIndex += 20;
+
     }
 
     @Override
     public void onFaile(Exception e) {
         e.printStackTrace();
+        Log.e(TAG, "失败，又失败了e");
     }
 
     @Override
     public void onFaile() {
         //暂时没想好做什么处理
+        Log.e(TAG, "失败，又失败了");
     }
 
     //--------------------------------system and constructor-------------------------------//
@@ -131,6 +136,7 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
         }
         newsPresenter.getNews(pageIndex, mType, mContext);
         refresh.setRefreshing(false);
+        Log.e(TAG, "调用了onRefresh");
     }
 
     RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {

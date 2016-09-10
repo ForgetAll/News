@@ -3,6 +3,8 @@ package com.example.luo_pc.news.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -12,6 +14,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.example.luo_pc.news.R;
+import com.jaeger.library.StatusBarUtil;
 
 
 /**
@@ -26,6 +29,7 @@ public class NewsActivity extends Activity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_news_detail);
+        StatusBarUtil.setColor(NewsActivity.this, Color.parseColor("#f13f00"));
 
         wv_news = (WebView) findViewById(R.id.wv_news);
 
@@ -43,7 +47,7 @@ public class NewsActivity extends Activity {
         settings.setBuiltInZoomControls(true);
 
 
-        wv_news.setWebViewClient(new WebViewClient(){
+        wv_news.setWebViewClient(new WebViewClient() {
 
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -64,7 +68,16 @@ public class NewsActivity extends Activity {
         });
     }
 
-//    @Override
+    @Override
+    protected void onPause() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+            wv_news.onPause();
+            //wv_news.reload();
+        }
+        super.onPause();
+    }
+
+    //    @Override
 //    public boolean onKeyDown(int keyCode, KeyEvent event) {
 //        if((keyCode == KeyEvent.KEYCODE_BACK) && wv_news.canGoBack()){
 //            wv_news.goBack();

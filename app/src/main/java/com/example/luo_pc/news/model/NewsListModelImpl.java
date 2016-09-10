@@ -1,6 +1,7 @@
 package com.example.luo_pc.news.model;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.luo_pc.news.bean.NewsBean;
 import com.example.luo_pc.news.fragment.NewsListFragment2;
@@ -21,27 +22,20 @@ import java.util.List;
 
 import okhttp3.Call;
 import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
 /**
  * Created by Luo_xiasuhuei321@163.com on 2016/9/6.
+ * <p>
+ * 此类是为新闻列表界面的Model，获取数据和部分业务逻辑在此处理
  */
 public class NewsListModelImpl implements NewsListModel<List<NewsBean>> {
-    //why?因为我认为有必要保留此未使用的常量
     @SuppressWarnings("unused")
+    //suppress unused because I think this variable should be here though it have never be used
     private static String TAG = "NewsListModelImpl";
-
-    //why?因为我认为有必要保留此未使用的常量
-    @SuppressWarnings("unused")
-    private static final int TYPE_CACHE = 1;
-    //从网络或者缓存获取数据的标志
-    private static final int TYPE_NETWORK = 0;
-
+    private final List<NewsBean> list = new ArrayList<>();
     private String value;
-    private List<NewsBean> newsBeanList;
     private ObjectInputStream ois;
     private boolean writeFlag = true;
     //在读缓存的情况下，只允许读一次
@@ -99,79 +93,69 @@ public class NewsListModelImpl implements NewsListModel<List<NewsBean>> {
 
     /**
      * 先从网络获取数据，如果获取不到则从缓存中读取数据
-     * <p/>
+     * <p>
      * 对于现在我这种rx的用法，恩，太糟了，又出现了迷之缩进
      * 待完善
      */
     private void getData(final int pageIndex, final String type, final GetNewsStatus<List<NewsBean>> getNewsStatus, final Context context) {
-        Observable.just(0, 1)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.newThread())
-                .map(new Func1<Integer, String>() {
+        Observable.just(getUrl(pageIndex, type)).map(new Func1<String, List<NewsBean>>() {
+            @Override
+            public List<NewsBean> call(String s) {
+                OkHttpUtils.get()
+                        .url(getUrl(pageIndex, type))
+                        .build().execute(new StringCallback() {
                     @Override
-                    public String call(Integer integer) {
-                        if (integer == TYPE_NETWORK) {
-                            return getUrl(pageIndex, type);
-                        }
-                        return "cache";
+                    public void onError(Call call, Exception e, int id) {
+                        getNewsStatus.onFailed(e);
                     }
-                }).subscribe(new Subscriber<String>() {
-            @Override
-            public void onCompleted() {
 
-            }
+                    @Override
+                    public void onResponse(String response, int id) {
+                        List<NewsBean> newsList = JsonUtils.readJsonNewsBean(response, value);
+                        if (writeFlag)
+                            if (newsList != null)
+                                for (NewsBean i : newsList) {
+                                    NewsListModelImpl.this.list.add(i);
+                                }
 
-            @Override
-            public void onError(Throwable e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onNext(String s) {
-                if (s.equals("cache")) {
-                    if (readFlag) {
-                        List<NewsBean> newsListFromFile = getNewsListFromFile(context);
-                        if (newsListFromFile == null)
-                            getNewsStatus.onFailed();
-                        getNewsStatus.onSuccess(newsListFromFile);
-                        readFlag = false;
-                    } else {
-                        getNewsStatus.onFailed();
-                    }
-                } else {
-                    String url = getUrl(pageIndex, type);
-                    OkHttpUtils.get().url(url).build().execute(new StringCallback() {
-                        @Override
-                        public void onError(Call call, Exception e, int id) {
-                            getNewsStatus.onFailed(e);
-                        }
-
-                        @Override
-                        public void onResponse(String response, int id) {
-                            newsBeanList = JsonUtils.readJsonNewsBean(response, value);
-                            getNewsStatus.onSuccess(newsBeanList);
-                            if (writeFlag) {
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        saveToFile(context, newsBeanList);
-                                    }
-                                }).start();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                saveToFile(context, newsList, "NewsBean" + value);
                             }
-                            onCompleted();
-                        }
-                    });
+                        }).start();
+
+                        getNewsStatus.onSuccess(newsList);
+                    }
+                });
+                Log.e(TAG, "走了这？");
+                return NewsListModelImpl.this.list;
+            }
+        }).subscribe(new Action1<List<NewsBean>>() {
+            @Override
+            public void call(List<NewsBean> newsBeen) {
+                if (newsBeen.size() != 0)
+                    return;
+                List<NewsBean> newsListFromFile = getNewsListFromFile(context);
+                if (newsListFromFile != null) {
+                    getNewsStatus.onSuccess(newsListFromFile);
+                    return;
                 }
+                getNewsStatus.onFailed();
             }
         });
     }
 
     /**
-     * 从文件中读取数据，此方法不处理线程问题
-     * 消除这里的警告因为如果list是个空值，我会处理
+     * 只有第一次读会返回数据，其他的时候返回null
      */
+    //suppress unchecked because I will deal with if it is a null list
     @SuppressWarnings("unchecked")
     private List<NewsBean> getNewsListFromFile(Context context) {
+        if (!readFlag)
+            return null;
+        readFlag = false;
+
         File cacheFile = FileUtils.getDisCacheDir(context, "NewsBean" + this.value);
         List<NewsBean> list = null;
         try {
@@ -182,6 +166,7 @@ public class NewsListModelImpl implements NewsListModel<List<NewsBean>> {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } finally {
+            Log.e(TAG, "出错了");
             try {
                 if (ois != null) {
                     ois.close();
@@ -190,15 +175,20 @@ public class NewsListModelImpl implements NewsListModel<List<NewsBean>> {
                 e.printStackTrace();
             }
         }
-
+        Log.e(TAG, "执行了");
         return list;
     }
 
     /**
-     * 缓存
+     * 只有第一次才会将数据缓存入文件
      */
-    private void saveToFile(Context context, List<NewsBean> list) {
-        File cacheFile = FileUtils.getDisCacheDir(context, "NewsBean" + this.value);
+    private void saveToFile(Context context, List<NewsBean> list, String fileName) {
+        if (!writeFlag)
+            return;
+        writeFlag = false;
+
+//        File cacheFile = FileUtils.getDisCacheDir(context, "NewsBean" + this.value);
+        File cacheFile = FileUtils.getDisCacheDir(context, fileName);
         ObjectOutputStream oos = null;
         try {
             oos = new ObjectOutputStream(new FileOutputStream(cacheFile));
@@ -215,6 +205,7 @@ public class NewsListModelImpl implements NewsListModel<List<NewsBean>> {
                 }
             }
         }
+        Log.e(TAG, "save执行了");
     }
 
 
