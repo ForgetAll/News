@@ -2,15 +2,19 @@ package com.example.luo_pc.news.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.ImageView;
 
 /**
  * Created by Luo_xiasuhuei321@163.com on 2016/9/7.
+ * desc:
  */
 public class RatioImageView extends ImageView {
+    private static final String TAG = "RationImageView";
 
     private int originalWidth;
     private int originalHeight;
+    private float rations = 1.5f;
 
     public RatioImageView(Context context) {
         super(context);
@@ -29,18 +33,32 @@ public class RatioImageView extends ImageView {
         this.originalHeight = originalHeight;
     }
 
+    public void setOriginalSize(float rations) {
+        this.rations = rations;
+        requestLayout();
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        if (originalWidth > 0 && originalHeight > 0) {
-            float ratio = (float) originalWidth / (float) originalHeight;
-
+//        if (originalWidth > 0 && originalHeight > 0) {
+//            float ratio = (float) originalWidth / (float) originalHeight;
+//
+//            int width = MeasureSpec.getSize(widthMeasureSpec);
+//            int height = MeasureSpec.getSize(heightMeasureSpec);
+//
+//            if (width > 0) {
+//                height = (int) ((float) width / ratio);
+//            }
+//
+//            setMeasuredDimension(width, height);
+//        }
+        if (rations > 0) {
             int width = MeasureSpec.getSize(widthMeasureSpec);
             int height = MeasureSpec.getSize(heightMeasureSpec);
-
             if (width > 0) {
-                height = (int) ((float) width / ratio);
+                height = (int) ((float) width / rations);
             }
-
+            Log.e(TAG, "rations:" + rations + " width:" + width + " height:" + height);
             setMeasuredDimension(width, height);
         } else {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);

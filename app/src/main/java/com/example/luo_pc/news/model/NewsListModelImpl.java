@@ -9,7 +9,6 @@ import com.example.luo_pc.news.utils.FileUtils;
 import com.example.luo_pc.news.utils.JsonUtils;
 import com.example.luo_pc.news.utils.Urls;
 import com.zhy.http.okhttp.OkHttpUtils;
-import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,10 +19,12 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.Call;
+import okhttp3.Response;
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by Luo_xiasuhuei321@163.com on 2016/9/6.
@@ -34,7 +35,6 @@ public class NewsListModelImpl implements NewsListModel<List<NewsBean>> {
     @SuppressWarnings("unused")
     //suppress unused because I think this variable should be here though it have never be used
     private static String TAG = "NewsListModelImpl";
-    private final List<NewsBean> list = new ArrayList<>();
     private String value;
     private ObjectInputStream ois;
     private boolean writeFlag = true;
@@ -101,47 +101,33 @@ public class NewsListModelImpl implements NewsListModel<List<NewsBean>> {
         Observable.just(getUrl(pageIndex, type)).map(new Func1<String, List<NewsBean>>() {
             @Override
             public List<NewsBean> call(String s) {
-                OkHttpUtils.get()
-                        .url(getUrl(pageIndex, type))
-                        .build().execute(new StringCallback() {
-                    @Override
-                    public void onError(Call call, Exception e, int id) {
-                        getNewsStatus.onFailed(e);
-                    }
-
-                    @Override
-                    public void onResponse(String response, int id) {
-                        List<NewsBean> newsList = JsonUtils.readJsonNewsBean(response, value);
-                        if (writeFlag)
-                            if (newsList != null)
-                                for (NewsBean i : newsList) {
-                                    NewsListModelImpl.this.list.add(i);
-                                }
-
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                saveToFile(context, newsList, "NewsBean" + value);
-                            }
-                        }).start();
-
-                        getNewsStatus.onSuccess(newsList);
-                    }
-                });
-                Log.e(TAG, "走了这？");
-                return NewsListModelImpl.this.list;
+                try {
+                    Response response = OkHttpUtils.get().url(getUrl(pageIndex, type)).build().execute();
+                    List<NewsBean> newsList = JsonUtils.readJsonNewsBean(response.body().string(), value);
+                    if (newsList != null)
+                        return newsList;
+                    return null;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
-        }).subscribe(new Action1<List<NewsBean>>() {
+        }).observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread()).subscribe(new Action1<List<NewsBean>>() {
             @Override
             public void call(List<NewsBean> newsBeen) {
-                if (newsBeen.size() != 0)
+                if(newsBeen != null){
+                    readFlag = false;
+                    getNewsStatus.onSuccess(newsBeen);
                     return;
-                List<NewsBean> newsListFromFile = getNewsListFromFile(context);
-                if (newsListFromFile != null) {
-                    getNewsStatus.onSuccess(newsListFromFile);
-                    return;
+                }else{
+                    List<NewsBean> newsListFromFile = getNewsListFromFile(context);
+                    if(newsListFromFile != null) {
+                        getNewsStatus.onSuccess(newsListFromFile);
+                        return;
+                    }
+                    getNewsStatus.onFailed();
                 }
-                getNewsStatus.onFailed();
             }
         });
     }
@@ -166,7 +152,6 @@ public class NewsListModelImpl implements NewsListModel<List<NewsBean>> {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } finally {
-            Log.e(TAG, "出错了");
             try {
                 if (ois != null) {
                     ois.close();

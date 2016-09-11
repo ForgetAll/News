@@ -1,6 +1,5 @@
 package com.example.luo_pc.news.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.design.widget.NavigationView;
@@ -14,7 +13,7 @@ import android.view.MenuItem;
 
 
 import com.example.luo_pc.news.R;
-import com.example.luo_pc.news.fragment.ImageFragment;
+import com.example.luo_pc.news.fragment.ImageListFragment;
 import com.example.luo_pc.news.fragment.MeFragment;
 import com.example.luo_pc.news.fragment.ParentFragment;
 import com.example.luo_pc.news.fragment.SettingFragment;
@@ -32,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String WEATHERFRAGMENT = "WeatherFragment";
     private static final String IMAGEFRAGMENT = "ImageFragment";
     private static final String MEFRAGMENT = "MeFragment";
-
     private DrawerLayout drawer;
     private NavigationView nav_layout;
     private final String TAG = "MainActivity";
@@ -42,16 +40,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private boolean jump;
     //包含数据的intent
     private Intent myIntent;
-
     //Fragment
     private ParentFragment newsListFragment = null;
     private WeatherFragment weatherFragment = null;
-    private ImageFragment imageFragment = null;
+    private ImageListFragment imageFragment = null;
     private MeFragment meFragment = null;
     private SettingFragment settingFragment = null;
 
     private FragmentTransaction transaction;
-    private Fragment fragment;
     private Intent startIntent;
     private Map<String, Fragment> fragmentList;
 
@@ -64,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         initData();
+
         transaction = getSupportFragmentManager().beginTransaction();
 
         jumpToWeather();
@@ -122,9 +119,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fragmentList = new HashMap<String, Fragment>();
     }
 
-
+    //suppress all warnings because I will commit transaction later
     @Override
+    @SuppressWarnings("all")
     public boolean onNavigationItemSelected(MenuItem item) {
+        Fragment fragment;
         switch (item.getItemId()) {
             case R.id.nav_news:
                 item.setChecked(true);
@@ -188,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (fragment != null) {
                     transaction.show(imageFragment);
                 } else {
-                    imageFragment = new ImageFragment();
+                    imageFragment = new ImageListFragment();
                     transaction.add(R.id.fl_content, imageFragment, "imageFragment");
                     fragmentList.put(IMAGEFRAGMENT, imageFragment);
                 }
@@ -251,6 +250,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     /**
      * 这个方法用来隐藏所有的fragment,只有fragment在new的时候才会被添加到这个集合
      */
+    //suppress all warnings because I am sure my code is correct
+    @SuppressWarnings("all")
     private void hideAllFragment(Map<String, Fragment> fragmentList, FragmentTransaction transaction) {
         for (Map.Entry<String, Fragment> entry : fragmentList.entrySet()) {
             Fragment fragment = entry.getValue();

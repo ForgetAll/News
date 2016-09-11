@@ -1,6 +1,7 @@
 package com.example.luo_pc.news.model;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.luo_pc.news.R;
 import com.example.luo_pc.news.bean.ImageBean;
@@ -75,7 +76,11 @@ public class ImageListModelImpl implements ImageListModel<List<ImageBean>> {
 
             @Override
             public void onNext(List<ImageBean> imageBeen) {
-                if (imageBeen == null) {
+                if (imageBeen != null) {
+                    dispatchImage.onSuccess(imageBeen);
+                    readFlag = false;
+                    onCompleted();
+                } else {
                     List<ImageBean> dataFromFile = getDataFromFile(context);
                     if (dataFromFile == null) {
                         dispatchImage.onFailed();
@@ -85,7 +90,6 @@ public class ImageListModelImpl implements ImageListModel<List<ImageBean>> {
                     imageBean.setUrl("asdf");
                     dataFromFile.add(imageBean);
                 }
-                dispatchImage.onSuccess(imageBeen);
                 onCompleted();
             }
         });

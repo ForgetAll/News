@@ -101,13 +101,11 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
     @Override
     public void onFaile(Exception e) {
         e.printStackTrace();
-        Log.e(TAG, "失败，又失败了e");
     }
 
     @Override
     public void onFaile() {
         //暂时没想好做什么处理
-        Log.e(TAG, "失败，又失败了");
     }
 
     //--------------------------------system and constructor-------------------------------//
@@ -136,7 +134,6 @@ public class NewsListFragment2 extends BaseLazyFragment implements NewsListView<
         }
         newsPresenter.getNews(pageIndex, mType, mContext);
         refresh.setRefreshing(false);
-        Log.e(TAG, "调用了onRefresh");
     }
 
     RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
